@@ -62,7 +62,7 @@ Open Government 3.0 licence.
 ## Contributing
 
 [If you want to help us build, and improve `consultation_nlp`, view our
-contributing guidelines][contributing].
+contributing guidelines][CONTRIBUTING].
 
 ### Requirements
 
