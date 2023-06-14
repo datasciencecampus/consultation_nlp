@@ -1,11 +1,12 @@
 <img src="https://github.com/datasciencecampus/awesome-campus/blob/master/ons_dsc_logo.png">
 
-# `consultation-nlp`
+# `consultation_nlp`
 [![Stability](https://img.shields.io/badge/stability-experimental-orange.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#experimental)
 [![codecov](https://codecov.io/gh/datasciencecampus/consultation_nlp/branch/main/graph/badge.svg?token=bvdkp2cCG8)](https://codecov.io/gh/datasciencecampus/consultation_nlp)
 [![Twitter](https://img.shields.io/twitter/url?label=Follow%20%40DataSciCampus&style=social&url=https%3A%2F%2Ftwitter.com%2FDataSciCampus)](https://twitter.com/DataSciCampus)
 
-Python code for preliminary natural language processing analysis for 2023 population transformation consultation
+Python code for preliminary natural language processing analysis for 2023 population transformation 
+consultation
 
 ```{warning}
 Where this documentation refers to the root folder we mean where this README.md is
@@ -15,7 +16,7 @@ located.
 ## Getting started
 
 To start using this project, [first make sure your system meets its
-requirements](#requirements).
+requirements](requirements.txt).
 
 It's suggested that you install this pack and it's requirements within a virtual environment.
 
@@ -47,34 +48,20 @@ To run the pipeline, run the following code in the terminal (whilst in the root 
 project).
 
 ```shell
-python src/consultation_nlp_2023/run_pipeline.py
+python src/run_pipeline.py
 ```
 
 Alternatively, most Python IDE's allow you to run the code directly from the IDE using a `run` button.
 
-## Required secrets and credentials
-
-To run this project, [you need a `.secrets` file with secrets/credentials as
-environmental variables][docs-loading-environment-variables-secrets]. The
-secrets/credentials should have the following environment variable name(s):
-
-| Secret/credential | Environment variable name | Description                                |
-|-------------------|---------------------------|--------------------------------------------|
-| Secret 1          | `SECRET_VARIABLE_1`       | Plain English description of Secret 1.     |
-| Credential 1      | `CREDENTIAL_VARIABLE_1`   | Plain English description of Credential 1. |
-
-Once you've added, [load these environment variables using
-`.env`][docs-loading-environment-variables].
-
 ## Licence
 
-Unless stated otherwise, the codebase is released under the MIT License. This covers
-both the codebase and any sample code in the documentation. The documentation is ©
-Crown copyright and available under the terms of the Open Government 3.0 licence.
+This codebase is released under the MIT License. This covers both the codebase and any sample code in
+the documentation. The documentation is ©Crown copyright and available under the terms of the 
+Open Government 3.0 licence.
 
 ## Contributing
 
-[If you want to help us build, and improve `consultation-nlp-2023`, view our
+[If you want to help us build, and improve `consultation_nlp`, view our
 contributing guidelines][contributing].
 
 ### Requirements
