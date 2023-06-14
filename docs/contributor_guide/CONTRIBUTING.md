@@ -6,7 +6,7 @@ we'd be happy to help!
 
 ## Code of Conduct
 
-[Please read `CODE_OF_CONDUCT.md` before contributing][code-of-conduct].
+[Please read `CODE_OF_CONDUCT.md` before contributing](CODE_OF_CONDUCT.md).
 
 ## Getting started
 
