@@ -1,6 +1,6 @@
 import pytest
 
-from consultation_nlp_2023.example_modules.example_module import (
+from example_modules.example_module import (
     hello_world,
     print_favourite_number,
     print_string,
