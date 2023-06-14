@@ -37,7 +37,7 @@ This repository contains a configuration of pre-commit hooks. These are language
       pre-commit install
       ```
 
-## Installing the package (Python Only)
+### Installing the package (Python Only)
 
 Whilst in the root folder, in the command prompt, you can install the package and it's dependencies
 using:
@@ -58,7 +58,7 @@ package code, you do not have to reinstall it for the changes to take effect.
 Remember to update the setup and requirement files inline with any changes to your
 package. The inital files contain the bare minimum to get you started.
 
-## Running the pipeline (Python only)
+### Running the pipeline (Python only)
 
 The entry point for the pipeline is stored within the package and called `run_pipeline.py`.
 To run the pipeline, run the following code in the terminal (whilst in the root directory of the
