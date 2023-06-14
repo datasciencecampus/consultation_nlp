@@ -62,11 +62,11 @@ Open Government 3.0 licence.
 ## Contributing
 
 [If you want to help us build, and improve `consultation_nlp`, view our
-contributing guidelines][CONTRIBUTING].
+contributing guidelines][docs/contributor_guide/CONTRIBUTING.md].
 
 ### Requirements
 
-[```Contributors have some additional requirements!```][contributing]
+[```Contributors have some additional requirements!```][docs/contributor_guide/CONTRIBUTING.md]
 
 - Python 3.6.1+ installed
 - a `.secrets` file with the [required secrets and
