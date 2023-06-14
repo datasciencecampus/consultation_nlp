@@ -1,4 +1,4 @@
-# Code of conduct for `consultation-nlp-2023`
+# Code of conduct for `consultation_nlp`
 
 Contributors to this repository hosted by `datasciencecampus` are expected to follow the
 Contributor Covenant Code of Conduct, and those working within Her Majesty's Government
