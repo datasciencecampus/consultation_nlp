@@ -15,7 +15,7 @@ Code][civil-service-code], and are expected to follow it in their contributions.
 
 Where this Code of Conduct says:
 
-- "Project", we mean this `consultation-nlp-2023` GitHub repository;
+- "Project", we mean this `consultation_nlp` GitHub repository;
 - "Maintainer", we mean the `datasciencecampus` organisation owners; and
 - "Leadership", we mean both `datasciencecampus` organisation owners, line managers, and other
   leadership within the ONS.
