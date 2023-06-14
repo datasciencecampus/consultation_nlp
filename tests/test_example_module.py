@@ -1,6 +1,6 @@
 import pytest
 
-from example_modules.example_module import (
+from src.example_modules.example_module import (
     hello_world,
     print_favourite_number,
     print_string,
