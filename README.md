@@ -20,6 +20,23 @@ requirements](requirements.txt).
 
 It's suggested that you install this pack and it's requirements within a virtual environment.
 
+### Cloning the repo
+To clone the repo, open command promt and navigate to the directory you want to save the repo to and call: 
+`git clone https://github.com/datasciencecampus/consultation_nlp.git`
+
+### Pre-commit actions
+This repository contains a configuration of pre-commit hooks. These are language agnostic and focussed on repository security (such as detection of passwords and API keys). If approaching this project as a developer, you are encouraged to install and enable `pre-commits` by running the following in your shell:
+   1. Install `pre-commit`:
+
+      ```
+      pip install pre-commit
+      ```
+   2. Enable `pre-commit`:
+
+      ```
+      pre-commit install
+      ```
+
 ## Installing the package (Python Only)
 
 Whilst in the root folder, in the command prompt, you can install the package and it's dependencies
