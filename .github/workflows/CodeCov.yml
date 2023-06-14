@@ -19,6 +19,7 @@ jobs:
       run: |
         pip install coverage
         pip install coverage[toml]
+        pip install pytest
         coverage run -m unittest
         
     - name: Upload Coverage to Codecov
