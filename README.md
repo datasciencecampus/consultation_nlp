@@ -2,8 +2,9 @@
 
 # `consultation-nlp`
 [![Stability](https://img.shields.io/badge/stability-experimental-orange.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#experimental)
-
+[![codecov](https://codecov.io/gh/datasciencecampus/consultation_nlp/branch/main/graph/badge.svg?token=bvdkp2cCG8)](https://codecov.io/gh/datasciencecampus/consultation_nlp)
 [![Twitter](https://img.shields.io/twitter/url?label=Follow%20%40DataSciCampus&style=social&url=https%3A%2F%2Ftwitter.com%2FDataSciCampus)](https://twitter.com/DataSciCampus)
+
 Python code for preliminary natural language processing analysis for 2023 population transformation consultation
 
 ```{warning}
