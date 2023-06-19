@@ -1,6 +1,6 @@
 import pytest
 
-from src.processing_modules import preprocessing
+from src.processing import preprocessing
 
 class TestLoadConfig:
     def test_input_type_error(self):

@@ -5,6 +5,7 @@ import string
 import re
 import mglearn
 import yaml
+import os
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 from nltk.corpus import stopwords as sw
 from nltk.stem import PorterStemmer
@@ -15,12 +16,11 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
-
-    
+from src.processing import preprocessing
 def run_pipeline():
     '''run entire consultation nlp pipeline'''
-    pass
-
+    config = preprocessing.load_config("src/config.yaml")
+    os.getcwd()
 
 '''Data Import'''
 
