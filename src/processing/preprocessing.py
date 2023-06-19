@@ -14,11 +14,13 @@ def load_config(filepath:str):
     dict
         the configuration settings with key-value pairs
     '''
-    assert type(filepath) is str, "filepath must be a string"
+    if type(filepath) is not str: 
+        raise TypeError("filepath must be a string")
     
     with open(filepath) as file:
         try:
             config = yaml.safe_load(file)
+            return config
         except yaml.YAMLError as exception:
             print(exception)
-    return config
+    
