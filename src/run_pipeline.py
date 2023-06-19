@@ -1,114 +1,76 @@
-'''Step 1: Packages'''
-#comment in usages later
-
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt 
-import wordcloud
-import spacy
-import os
+import matplotlib.pyplot as plt
 import string
 import re
 import mglearn
-from collections import Counter
-import matplotlib.pyplot as plt
-
+import yaml
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
-
-import nltk
 from nltk.corpus import stopwords as sw
-nltk.data.path.append("../local_packages/nltk_data")
-stopwords = sw.words("english")
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import sent_tokenize 
 from nltk.tokenize import word_tokenize
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
-
-import sklearn
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 
-from IPython.display import display, HTML
-import datetime
-
-import scipy
-from scipy.signal import savgol_filter
-from spellchecker import SpellChecker
-
-import xlrd
     
-import gensim
-import gensim.corpora as corpora
-from gensim.utils import simple_preprocess
-from gensim.models.nmf import Nmf
-from gensim.models.coherencemodel import CoherenceModel
-from gensim.models import LdaModel
-from gensim.models import HdpModel
-from gensim.corpora import Dictionary
-from gensim.models import TfidfModel
-from gensim.models import KeyedVectors
-import gensim.downloader as api
+def run_pipeline():
+    '''run entire consultation nlp pipeline'''
+    pass
 
 
+'''Data Import'''
 
-'''Step 2: Data'''
+'''    
+Project Details:
+    
+File pathway:"D:\nlp_pipeline_brenng\nlp_pipeline_brenng\nlp_projects\census_transf_2023"
+File: 2023 consultation mock data.csv
+Data Column: (Multiple columns) Start with...cens_test_1
 
-path_to_file = "Z:\Covid\opn_coliv_nlp\OPN2304DK_Main_Income_nlp.csv"
-opn_coliv_nlp = pd.read_csv(path_to_file)
+row count (raw): In progress...TBC
+'''
 
-opn_coliv_nlp.head(5)
-opn_coliv_nlp.shape
-opn_coliv_nlp['COL_OwnWords'].shape
 
-'''Step 3: Functions'''
+path_to_file = r"D:\nlp_pipeline_brenng\nlp_pipeline_brenng\nlp_projects\census_transf_2023\2023_consultation_mock_data.csv"
+nlp_censtranf = pd.read_csv(path_to_file)
 
-'''#Preprocessing''' #Following the method of amending the column throughout...amend if needed to create new columns
+nlp_censtranf.shape
+nlp_censtranf["cens_test_1"].head(5) #may need to change "" to '' for column/variable name!!!
 
-#sample check
+'''Data Pre-processing'''
 
-opn_coliv_nlp['COL_OwnWords'][18]
 
 # lower casing
 
-opn_coliv_nlp['COL_OwnWords'] = opn_coliv_nlp['COL_OwnWords'].str.lower()
-
-opn_coliv_nlp['COL_OwnWords'][18]
-
-opn_coliv_nlp['COL_OwnWords'].shape
-
+nlp_censtranf["cens_test_1"] = nlp_censtranf["cens_test_1"].str.lower()
 
 # remove punctuation
 
 print(string.punctuation)
 
-# Below is a function that uses regex to remove punctuation from strings
 def remove_punct(ptext):
-    # replace any punctuation with nothing "", effectively removing it
     ptext = re.sub(string=ptext,
                    pattern="[{}]".format(string.punctuation), 
                    repl="")
     return ptext
 
-opn_coliv_nlp['COL_OwnWords'] = opn_coliv_nlp['COL_OwnWords'].apply(remove_punct)
-
-opn_coliv_nlp['COL_OwnWords'][18]
-
-opn_coliv_nlp['COL_OwnWords'].shape #should be seeing some lines removed here...there are some , and . starts. Might have become blanks...recheck count after blanks removed
+nlp_censtranf["cens_test_1"] = nlp_censtranf["cens_test_1"].apply(remove_punct)
 
 
+#Bad Starts...identify badstarts and update function below
 
-#Bad Starts...9999 is the only one I can see in the table so far, which isn't removed through other methods (0 could be taken out of this function)
-
-opn_coliv_nlp = ( 
+nlp_cnestranf = ( 
     opn_coliv_nlp
-    .loc[lambda df: ~df['COL_OwnWords'].str.startswith('9999')]
-    .loc[lambda df: df['COL_OwnWords']!='0']
+    .loc[lambda df: ~df["cens_test_1"].str.startswith('9999')]
+    .loc[lambda df: df["cens_test_1"]!='0']
 )
 
 
-opn_coliv_nlp['COL_OwnWords'].shape
+nlp_censtranf["cens_test_1"].shape
 
 
 # spelling mistakes...needs a confirmation, it's running but would benefit from another opinion
@@ -120,7 +82,8 @@ def reTokenize(doc):
     tokens = WORD.findall(doc)
     return tokens
 
-text = ["opn_coliv_nlp['COL_OwnWords']"]
+text = ["nlp_censtranf['cens_test_1']"]
+
 
 def spell_correct(text):
     sptext =  [' '.join([spell.correction(w).lower() for w in reTokenize(doc)])  for doc in text]    
@@ -128,43 +91,31 @@ def spell_correct(text):
 
 print(spell_correct(text)) 
 
-opn_coliv_nlp['COL_OwnWords'][18] #find a row with an error to confirm this function
-
-opn_coliv_nlp['COL_OwnWords'].shape
-
-
 
 '''SOMETHING NOT RIGHT HERE''' #Remove Blanks...DOESN'T SEEM RIGHT AT ALL...should be well into double figures of blanks being removed
 
 # replace Blank Cells by NaN in pandas DataFrame Using replace() Function
 
-opn_coliv_nlp['COL_OwnWords'] = opn_coliv_nlp['COL_OwnWords'].replace(r'^s*$', float('NaN'), regex = True)  # Replace blanks by NaN
-opn_coliv_nlp.dropna(subset = ['COL_OwnWords'], inplace = True)     # Remove rows with NaN
+nlp_censtranf["cens_test_1"] = nlp_censtranf["cens_test_1"].replace(r'^s*$', float('NaN'), regex = True)  # Replace blanks by NaN
+op.dropna(subset = ["cens_test_1"], inplace = True)     # Remove rows with NaN
 
-opn_coliv_nlp['COL_OwnWords'].shape # not removing all due to spaces at the start of the blank row...look for a regex that looks for spaces...or look up 'strip' for same purose (don't ID a character and it will remove spaces)
+nlp_censtranf["cens_test_1"].shape # not removing all due to spaces at the start of the blank row...look for a regex that looks for spaces...or look up 'strip' for same purose (don't ID a character and it will remove spaces)
 
 '''START RENAMING CONVENTION FROM HERE?'''
 
 '''#Cleaning data'''
 
 #Tokenize and remove short tokens
+#put in a text check here
+nlp_censtranf["cens_test_1_tokens"] = nlp_censtranf["cens_test_1"].apply(nltk.word_tokenize)
 
-opn_coliv_nlp['COL_OwnWords'][456]
-opn_coliv_nlp['COL_OwnWords_tokens'] = opn_coliv_nlp['COL_OwnWords'].apply(nltk.word_tokenize)
-opn_coliv_nlp['COL_OwnWords_tokens'][18] #not outputting tokenized version as it should
-
-opn_coliv_nlp['COL_OwnWords_tokens'].shape
-
-
- # remove tokens of 2 lenght 2 or less
-'''need to modify when I correct for the new columns approach'''
+ # remove tokens of 2 lenght 2 or less...amend as needed
  
 def remove_short_tokens(ptokens):
     return [token for token in ptokens if len(token) > 2]
 
-opn_coliv_nlp['COL_OwnWords_tokens'] = opn_coliv_nlp['COL_OwnWords_tokens'].apply(remove_short_tokens) #modify based on new columns approach
+nlp_censtranf["cens_test_1_tokens"]  = nlp_censtranf["cens_test_1_tokens"] .apply(remove_short_tokens) #modify based on new columns approach
 
-opn_coliv_nlp['COL_OwnWords_tokens'][18]
 
 #Stem vs Lemm....USING STEMMING FOR NOW, but change to Lemming asap
 
@@ -176,11 +127,8 @@ def stemming(ptoken):
     return [stemmer.stem(token) for token in ptoken] 
 
 # apply stemming
-opn_coliv_nlp['COL_OwnWords_stemmed'] = opn_coliv_nlp['COL_OwnWords_tokens'].apply(stemming)
+nlp_censtranf["cens_test_1_stemmed"] = nlp_censtranf["cens_test_1_tokens"] .apply(stemming)
 
-# tokens post-stemming
-opn_coliv_nlp['COL_OwnWords_stemmed'][18]
-# note: chose [10] as a good example, but my reindexing isn't working at the moment so [10] will change
 
 #Stopwords
 
@@ -195,97 +143,14 @@ def clean_stopwords(tokens):
 
 # can add an exclusion list code here
 
-opn_coliv_nlp['COL_OwnWords_stopwords'] = opn_coliv_nlp['COL_OwnWords_stemmed'].apply(clean_stopwords)
-
-opn_coliv_nlp['COL_OwnWords_stopwords'][18] 
+nlp_censtranf["cens_test_1_stopwords"] = nlp_censtranf["cens_test_1_stemmed"].apply(clean_stopwords)
 
 
 '''EDA and Summary first looks'''
-
-#BOW to Word Cloud#
-
-#eda and coutervectorization???
-
-opn_coliv_nlp['COL_OwnWords_eda'] = opn_coliv_nlp['COL_OwnWords_stopwords'] 
-
-opn_coliv_nlp['COL_OwnWords_eda'][18] #renamed to eda to mark the next phase of analysis
-
-
-#join tokens and the create work an assessment of the vocabulary (frequency etc)
-def join_tokens(tokens):
-    return ' '.join(tokens)
-
-opn_coliv_nlp['COL_OwnWords_str'] = opn_coliv_nlp['COL_OwnWords_eda'].apply(join_tokens)
-
-coliv_words = opn_coliv_nlp['COL_OwnWords_str']
-
-#CountVectorizer is a transformer...is it used to fit to my data and then start the tokenization process
-vect = CountVectorizer()
-vect.fit(coliv_words)
-
-#the the vocabulary can be built and displayed...using the vocabulary_ attribute
-print("Vocabulary size: {}".format(len(vect.vocabulary_)))
-
-print("Vocabulary content:\n{}".format(vect.vocabulary_))
-
-#1 word frequency count
-
-# Tokenise in a basic manner
-#REMOVED TOKENIZING HERE BECAUSERE THERE's NO LOGIV TO IT...REMOVE THIS LINE WHEN CONFIDENT
-
-#1 word frequency count
-
-# We want one full list of tokens to be analysed...can be applied directly to the column/variable??
-coliv_freq = []
-for item in opn_coliv_nlp['COL_OwnWords_eda'] :
-    # extend is similar to append, but combines lists into
-    # one larger list
-    coliv_freq.extend(item)
-
-# A quick look at our frequency dictionary...different from above?
-counter = Counter(coliv_freq)
-print(counter)
-
-# calling .most_common() on our Counter
-# object will sort them for us
-counter.most_common(25)
-
-# separate out the tokens and counts into lists
-tokens, counts = zip(*counter.most_common())
-
-def plotall(px, py):
-    
-    plt.xticks(fontsize=12, rotation=90)
-    plt.ylabel('Frequency')
-    plt.xlabel("Tokens")
-    plt.bar(px, py)
-    plt.show()
-    
-# select only the top 10 of each
-plotall(tokens[:10], counts[:10])
-
-# Join all the text data
-text = " ".join(coliv_freq)
-
-
-#Wordcloud
-
-# The text string is then passed to the wordcloud function:
-wordcloud = WordCloud(max_font_size=50, 
-                      max_words=100, 
-                      background_color="white").generate(text)
-
-# Display the generated image:
-plt.imshow(wordcloud, interpolation='bilinear')
-plt.axis("off")
-plt.show()
-
+#REBUILD THIS SECTION ONCE OPN WORK UPDATED
 
 '''#Topic Modelling'''
-
-
-# step 1 fit the data...this is more of a data prep stage, takes the top 15% most occuring words away, up to 10k words (I have only 1070)
-# resetting to my total number of rows...742
+#what's not applied from cleaning above in TM below?
 
 vect = CountVectorizer(max_features=10000, max_df=.15)
 coliv_wordsbows  = vect.fit_transform(coliv_words)  #creates the bow from vect
@@ -315,10 +180,10 @@ mglearn.tools.print_topics(topics=topics, feature_names=feature_names,
 
 document_topics5 #provides the weights???
 
-coliv_respns = opn_coliv_nlp['COL_OwnWords'] #what's here and how is this utlising the pre-processing and data cleaning?
-coliv_respns = coliv_respns.reset_index(drop=True)
+censtranf_respns = nlp_censtranf["cens_test_1"] #what's here and how is this utlising the pre-processing and data cleaning?
+censtranf_respns = nlp_censtranf.reset_index(drop=True)
 
-coliv_respns[2] #quick QA
+nlp_censtranf[2] #quick QA
 
 # running a loop to repeat...the above steps??
 
@@ -380,7 +245,3 @@ plt.tight_layout()
 
 
 '''#Splitting and Time Series another time'''
-#age
-#gender
-#deprivation
-#tenure (e.g. renters vs owners)
