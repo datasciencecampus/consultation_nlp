@@ -22,7 +22,7 @@ jobs:
         pip install -r requirements.txt
         pip install coverage
         pip install coverage[toml]
-        coverage run -m unittest
+        coverage run -m pytest
         
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v3
