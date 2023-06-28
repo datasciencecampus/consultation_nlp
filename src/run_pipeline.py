@@ -33,14 +33,14 @@ raw_series = test_df["test_data"]
 def run_pipeline():
     """run entire consultation nlp pipeline"""
     config = preprocessing.load_config("src/config.yaml")
-    raw_data = pd.read_csv(config["raw_data_path"])
-    raw_series = raw_data["cens_test_1"]
+    raw_data = pd.read_csv(config["raw_data_path"], encoding="cp1252")
+    raw_series = raw_data["qu_3"]
     # TODO add clean_data parent function
     lower_series = raw_series.str.lower()
-    no_punctuation_series = lower_series.apply(preprocessing.remove_punctuation)
+    without_blank_rows = preprocessing.remove_blank_rows(lower_series)
+    no_punctuation_series = without_blank_rows.apply(preprocessing.remove_punctuation)
     # TODO add a spelling fixer function
-    without_blank_rows = preprocessing.remove_blank_rows(no_punctuation_series)
-    word_tokens = without_blank_rows.apply(word_tokenize)
+    word_tokens = no_punctuation_series.apply(word_tokenize)
     stemmed_tokens = word_tokens.apply(preprocessing.stemmer)
     # TODO consider lemmatized_tokens = word_tokens.apply(preprocessing.lemmatizer)
     # defaults to look at nouns, but can change it to look at adjectives if needed
