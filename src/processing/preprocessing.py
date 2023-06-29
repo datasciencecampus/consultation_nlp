@@ -7,6 +7,7 @@ import numpy as np
 import textblob as tb
 import yaml
 from nltk.corpus import stopwords as sw
+from nltk.corpus.reader.wordlist import WordListCorpusReader
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from pandas.core.series import Series
 from rapidfuzz.fuzz import ratio
@@ -80,12 +81,12 @@ def correct_spelling(string: str, additional_words: list) -> str:
     -------
     str
         string with the spelling fixed"""
-    _update_words(additional_words)
+    _update_spelling_words(additional_words)
     spelling_fixed = str(tb.TextBlob(string).correct())
     return spelling_fixed
 
 
-def _update_words(additional_words: list) -> None:
+def _update_spelling_words(additional_words: list) -> None:
     """update word in the textblob library with commonly used business word
     Parameters
     ----------
@@ -172,21 +173,23 @@ def lemmatizer(tokens: list) -> list:
     return lemmatized_tokens
 
 
-def remove_nltk_stopwords(tokens: list) -> list:
+def remove_nltk_stopwords(tokens: list, additional_stopwords: list) -> list:
     """remove stopwords from series
 
     Parameters
     ----------
     tokens : list
         list of tokenized words including stopwords
-
+    additional_stopwords:list
+        additional words to add to the stopwords
     Returns
     -------
     list
         token list without stopwords
     """
     stopwords = _initialise_nltk_stopwords()
-    without_stopwords = [item for item in tokens if item not in stopwords]
+    updated_stopwords = _update_nltk_stopwords(stopwords, additional_stopwords)
+    without_stopwords = [item for item in tokens if item not in updated_stopwords]
     return without_stopwords
 
 
@@ -204,6 +207,22 @@ def _initialise_nltk_stopwords() -> list:
         nltk.download("stopwords")
     nltk.data.path.append("../local_packages/nltk_data")
     stopwords = sw.words("english")
+    return stopwords
+
+
+def _update_nltk_stopwords(stopwords: WordListCorpusReader, additional_stopwords: list):
+    """add additional words to nltk stopwords
+    Parameters
+    ----------
+    additional_stopwords:list
+        new words to add to the words to remove list
+    Returns
+    -------
+    WordListCorpusReader
+        a corpus of words to remove
+    """
+    for word in additional_stopwords:
+        stopwords.append(word)
     return stopwords
 
 
