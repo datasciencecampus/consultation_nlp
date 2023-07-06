@@ -139,14 +139,15 @@ class TestLemmatizer:
         assert actual == expected, "words are not being lemmatized correctly"
 
 
-@pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 class TestRemoveNLTKStopwords:
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_remove_standard_stopwords(self):
         tokens = ["my", "name", "is", "elf", "who", "are", "you"]
         actual = remove_nltk_stopwords(tokens, [])
         expected = ["name", "elf"]
         assert actual == expected, "core stopwords not being removed correctly"
 
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_remove_additional_stopwords(self):
         tokens = ["my", "name", "is", "elf", "who", "are", "you"]
         actual = remove_nltk_stopwords(tokens, ["elf"])
@@ -154,12 +155,13 @@ class TestRemoveNLTKStopwords:
         assert actual == expected, "additional stopwords not being removed correctly"
 
 
-@pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 class TestInitialiseNLTKStopwords:
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_return_stopwords_list(self):
         stopwords = _initialise_nltk_stopwords()
         assert isinstance(stopwords, list), "Did not return a list of stopwords"
 
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_key_stopwords(self):
         stopwords = _initialise_nltk_stopwords()
         expected = ["i", "we", "you"]
@@ -167,8 +169,8 @@ class TestInitialiseNLTKStopwords:
         assert all(actual), "expected key words missing from stopwords"
 
 
-@pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 class TestUpdateNLTKStopwords:
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_add_word_to_stopwords(self):
         stopwords = _initialise_nltk_stopwords()
         additional_words = ["elf", "santa"]
