@@ -173,6 +173,7 @@ def lemmatizer(tokens: list) -> list:
     return lemmatized_tokens
 
 
+# @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 def remove_nltk_stopwords(tokens: list, additional_stopwords: list = []) -> list:
     """remove stopwords from series
 
@@ -193,6 +194,7 @@ def remove_nltk_stopwords(tokens: list, additional_stopwords: list = []) -> list
     return without_stopwords
 
 
+# @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 def _initialise_nltk_stopwords() -> list:
     """fetch nltk stopwords from corpora
 
@@ -210,6 +212,7 @@ def _initialise_nltk_stopwords() -> list:
     return stopwords
 
 
+# @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 def _update_nltk_stopwords(stopwords: list, additional_stopwords: list):
     """add additional words to nltk stopwords
     Parameters
