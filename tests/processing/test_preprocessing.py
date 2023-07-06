@@ -2,9 +2,17 @@ import unittest
 
 import numpy as np
 import pytest
+import textblob as tb
 from pandas import Series
 
-from src.processing.preprocessing import _replace_blanks, load_config, remove_blank_rows
+from src.processing.preprocessing import (
+    _replace_blanks,
+    _update_spelling_words,
+    correct_spelling,
+    fuzzy_compare_ratio,
+    load_config,
+    remove_blank_rows,
+)
 
 
 class TestLoadConfig:
@@ -64,6 +72,39 @@ class TestReplaceBlanks:
         assert (
             type(actual) is Series
         ), "output is not <class 'pandas.core.series.Series'>"
+
+
+class TestCorrectSpelling:
+    def test_spelling_fixed(self):
+        house_str = "I live in a housr"
+        corrected = correct_spelling(house_str)
+        assert corrected == "I live in a house", "spelling not fixed correctly"
+
+    def test_word_update(self):
+        additional_words = ["housr"]
+        house_str = "I live in a housr"
+        corrected = correct_spelling(house_str, additional_words)
+        assert (
+            corrected == "I live in a housr"
+        ), "spelling word list not correctly updated"
+
+
+class TestUpdateSpellingWords:
+    def test_update_word_list(self):
+        additional_words = ["housr"]
+        _update_spelling_words(additional_words)
+        assert (
+            "housr" in tb.en.spelling.keys()
+        ), "spelling word list not updated correctly"
+
+
+class TestFuzzyCompareRatio:
+    def test_ratios(self):
+        base = Series(["this is", "this isn't"])
+        comparison = Series(["this is", "yellow"])
+        expected = Series([100.00, 0.0])
+        actual = fuzzy_compare_ratio(base, comparison)
+        assert all(expected == actual), "fuzzy scoring not working correctly"
 
 
 if __name__ == "__main__":
