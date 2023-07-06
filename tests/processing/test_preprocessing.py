@@ -132,6 +132,7 @@ class TestStemmer:
 
 
 class TestLemmatizer:
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_lemmatization(self):
         word_list = ["house", "houses", "housing"]
         actual = lemmatizer(word_list)
