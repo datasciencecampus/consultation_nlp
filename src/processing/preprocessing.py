@@ -4,13 +4,15 @@ import string
 
 import nltk
 import numpy as np
+import textblob as tb
 import yaml
 from nltk.corpus import stopwords as sw
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from pandas.core.series import Series
+from rapidfuzz.fuzz import ratio
 
 
-def load_config(filepath: str):
+def load_config(filepath: str) -> dict:
     """Loads configuration settings from given filepath to
     yaml file
 
@@ -45,9 +47,76 @@ def remove_blank_rows(series: Series) -> Series:
     series
         series with blank rows removed
     """
-    without_blanks = replace_blanks(series)
+    without_blanks = _replace_blanks(series)
     without_blanks.dropna(inplace=True)
     return without_blanks
+
+
+def _replace_blanks(series: Series) -> Series:
+    """Replace blanks within array with NaN
+
+    Parameters
+    ----------
+    series : Series
+        series of strings containing some blank rows
+
+    Returns
+    -------
+    Series
+        series with blanks replaced with 'NaN'
+    """
+    blanks_replaced = series.replace([r"^\s*?$"], np.NaN, regex=True)
+    return blanks_replaced
+
+
+def correct_spelling(string: str, additional_words: list = []) -> str:
+    """correct spelling using norvig spell-correct method
+    (it has around 70% accuracy)
+    Parameters
+    ----------
+    string:str
+        string you want to fix the spelling in
+    Returns
+    -------
+    str
+        string with the spelling fixed"""
+    _update_spelling_words(additional_words)
+    spelling_fixed = str(tb.TextBlob(string).correct())
+    return spelling_fixed
+
+
+def _update_spelling_words(additional_words: list) -> None:
+    """update word in the textblob library with commonly used business word
+    Parameters
+    ----------
+    additional_words:list
+        words to add to the textblob dictionary
+    Returns
+    -------
+    None
+    """
+    for word in additional_words:
+        tb.en.spelling.update({word: 1})
+        tb.en.spelling
+    return None
+
+
+def fuzzy_compare_ratio(base: Series, comparison: Series) -> Series:
+    """compare the base series to the comparison series to get
+    a similarity ratio between strings in the same column
+    Parameters
+    ----------
+    base: Series
+        the base series for comparison
+    comparison: Series
+        the series you want to compare against
+    Returns
+    -------
+    Series
+        a series of ratios (type:float) with scores closer to 100
+        indicating complete match"""
+    fuzzy_ratio = Series(map(ratio, base, comparison))
+    return fuzzy_ratio
 
 
 def remove_punctuation(text: str) -> str:
@@ -67,25 +136,8 @@ def remove_punctuation(text: str) -> str:
     return new_text
 
 
-def replace_blanks(series: Series) -> Series:
-    """Replace blanks within array with NaN
-
-    Parameters
-    ----------
-    series : Series
-        series of strings containing some blank rows
-
-    Returns
-    -------
-    Series
-        series with blanks replaced with 'NaN'
-    """
-    blanks_replaced = series.replace([r"^\s*?$"], np.NaN, regex=True)
-    return blanks_replaced
-
-
 def stemmer(tokens: list) -> list:
-    """Stem works to their root form (e.g. flying -> fly, Beautiful -> Beauty)
+    """Stem works to their root form (e.g. flying -> fli, Beautiful -> Beauti)
 
     Parameters
     ----------
@@ -121,7 +173,27 @@ def lemmatizer(tokens: list) -> list:
     return lemmatized_tokens
 
 
-def initialise_nltk_stopwords() -> list:
+def remove_nltk_stopwords(tokens: list, additional_stopwords: list = []) -> list:
+    """remove stopwords from series
+
+    Parameters
+    ----------
+    tokens : list
+        list of tokenized words including stopwords
+    additional_stopwords:list
+        additional words to add to the stopwords (defualt empty list)
+    Returns
+    -------
+    list
+        token list without stopwords
+    """
+    stopwords = _initialise_nltk_stopwords()
+    updated_stopwords = _update_nltk_stopwords(stopwords, additional_stopwords)
+    without_stopwords = [item for item in tokens if item not in updated_stopwords]
+    return without_stopwords
+
+
+def _initialise_nltk_stopwords() -> list:
     """fetch nltk stopwords from corpora
 
     Returns
@@ -138,22 +210,22 @@ def initialise_nltk_stopwords() -> list:
     return stopwords
 
 
-def remove_nltk_stopwords(tokens: list) -> list:
-    """remove stopwords from series
-
+def _update_nltk_stopwords(stopwords: list, additional_stopwords: list):
+    """add additional words to nltk stopwords
     Parameters
     ----------
-    tokens : list
-        list of tokenized words including stopwords
-
+    stopwords: list
+        a list of stopwords
+    additional_stopwords:list
+        new words to add to the words to remove list
     Returns
     -------
     list
-        token list without stopwords
+        a corpus of words to remove
     """
-    stopwords = initialise_nltk_stopwords()
-    without_stopwords = [item for item in tokens if item not in stopwords]
-    return without_stopwords
+    for word in additional_stopwords:
+        stopwords.append(word)
+    return stopwords
 
 
 def rejoin_tokens(tokens: list) -> str:

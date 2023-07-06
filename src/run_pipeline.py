@@ -1,53 +1,56 @@
 # import re
 # import string
-
-from importlib import reload
-
 # import matplotlib.pyplot as plt
 # import mglearn
 # import numpy as np
 import pandas as pd
 from nltk.tokenize import word_tokenize
-
-# from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 
-from src.processing import preprocessing
-
-reload(preprocessing)
-
-test_array = pd.array(
-    [
-        "my name is Colin",
-        "Hello!",
-        "What do you mean?",
-        " ",
-        "How dare you. I liked that rabbit!",
-        "beauty, beautiful, pretty, beaut?",
-    ]
+from src.processing.preprocessing import (  # stemmer,
+    correct_spelling,
+    fuzzy_compare_ratio,
+    lemmatizer,
+    load_config,
+    rejoin_tokens,
+    remove_blank_rows,
+    remove_nltk_stopwords,
+    remove_punctuation,
 )
-test_df = pd.DataFrame({"test_data": test_array})
-raw_series = test_df["test_data"]
+from src.processing.visualisation import create_wordcloud  # print_row_by_row,
+
+# from sklearn.decomposition import LatentDirichletAllocation
+# from importlib import reload
+# reload(preprocessing)
 
 
 def run_pipeline():
     """run entire consultation nlp pipeline"""
-    config = preprocessing.load_config("src/config.yaml")
+    config = load_config("src/config.yaml")
     raw_data = pd.read_csv(config["raw_data_path"], encoding="cp1252")
     raw_series = raw_data["qu_3"]
     # TODO add clean_data parent function
     lower_series = raw_series.str.lower()
-    without_blank_rows = preprocessing.remove_blank_rows(lower_series)
-    no_punctuation_series = without_blank_rows.apply(preprocessing.remove_punctuation)
-    # TODO add a spelling fixer function
+    without_blank_rows = remove_blank_rows(lower_series)
+    spelling_fixed = without_blank_rows.apply(
+        correct_spelling, config["business_terminology"]
+    )
+    impact_of_spell_correction = fuzzy_compare_ratio(without_blank_rows, spelling_fixed)
+    # TODO consider whether there are words we need to fix manually? i.e timliness
+    #      print_row_by_row(without_blank_rows,spelling_fixed)
+    no_punctuation_series = spelling_fixed.apply(remove_punctuation)
     word_tokens = no_punctuation_series.apply(word_tokenize)
-    stemmed_tokens = word_tokens.apply(preprocessing.stemmer)
-    # TODO consider lemmatized_tokens = word_tokens.apply(preprocessing.lemmatizer)
-    # defaults to look at nouns, but can change it to look at adjectives if needed
-    without_stopwords = stemmed_tokens.apply(preprocessing.remove_nltk_stopwords)
-    # TODO add list of stopwords to design info
-    rejoined_words = without_stopwords.apply(preprocessing.rejoin_tokens)
-    print(rejoined_words)
+    # stemmed_tokens = word_tokens.apply(stemmer)
+    lemmatized_tokens = word_tokens.apply(lemmatizer)
+    without_stopwords = lemmatized_tokens.apply(
+        lambda x: remove_nltk_stopwords(x, config["additional_stopwords"])
+    )
+    rejoined_words = without_stopwords.apply(rejoin_tokens)
+    text = " ".join(rejoined_words)
+    create_wordcloud(text)
+
+    # just printing to overcome qa aspect
+    print(rejoined_words, impact_of_spell_correction)
 
     """#Topic Modelling"""
 
