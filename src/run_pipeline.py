@@ -7,7 +7,6 @@ import pandas as pd
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
-from src.processing.preprocessing import remove_punctuation  # ,
 from src.processing.preprocessing import (  # stemmer,
     correct_spelling,
     fuzzy_compare_ratio,
@@ -16,7 +15,9 @@ from src.processing.preprocessing import (  # stemmer,
     rejoin_tokens,
     remove_blank_rows,
     remove_nltk_stopwords,
+    remove_punctuation,
 )
+from src.processing.visualisation import create_wordcloud  # print_row_by_row,
 
 # from sklearn.decomposition import LatentDirichletAllocation
 # from importlib import reload
@@ -35,17 +36,18 @@ def run_pipeline():
         correct_spelling, config["business_terminology"]
     )
     impact_of_spell_correction = fuzzy_compare_ratio(without_blank_rows, spelling_fixed)
-
     # TODO consider whether there are words we need to fix manually? i.e timliness
-    # print_row_by_row(without_blank_rows,spelling_fixed)
+    #      print_row_by_row(without_blank_rows,spelling_fixed)
     no_punctuation_series = spelling_fixed.apply(remove_punctuation)
     word_tokens = no_punctuation_series.apply(word_tokenize)
     # stemmed_tokens = word_tokens.apply(stemmer)
     lemmatized_tokens = word_tokens.apply(lemmatizer)
-    # defaults to look at nouns, but can change it to look at adjectives if needed
-    without_stopwords = lemmatized_tokens.apply(remove_nltk_stopwords)
-    # TODO add list of stopwords to design info
+    without_stopwords = lemmatized_tokens.apply(
+        lambda x: remove_nltk_stopwords(x, config["additional_stopwords"])
+    )
     rejoined_words = without_stopwords.apply(rejoin_tokens)
+    text = " ".join(rejoined_words)
+    create_wordcloud(text)
 
     # just printing to overcome qa aspect
     print(rejoined_words, impact_of_spell_correction)

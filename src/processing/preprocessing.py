@@ -12,7 +12,7 @@ from pandas.core.series import Series
 from rapidfuzz.fuzz import ratio
 
 
-def load_config(filepath: str):
+def load_config(filepath: str) -> dict:
     """Loads configuration settings from given filepath to
     yaml file
 
@@ -69,7 +69,7 @@ def _replace_blanks(series: Series) -> Series:
     return blanks_replaced
 
 
-def correct_spelling(string: str, additional_words: list) -> str:
+def correct_spelling(string: str, additional_words: list = []) -> str:
     """correct spelling using norvig spell-correct method
     (it has around 70% accuracy)
     Parameters
@@ -80,12 +80,12 @@ def correct_spelling(string: str, additional_words: list) -> str:
     -------
     str
         string with the spelling fixed"""
-    _update_words(additional_words)
+    _update_spelling_words(additional_words)
     spelling_fixed = str(tb.TextBlob(string).correct())
     return spelling_fixed
 
 
-def _update_words(additional_words: list) -> None:
+def _update_spelling_words(additional_words: list) -> None:
     """update word in the textblob library with commonly used business word
     Parameters
     ----------
@@ -97,6 +97,7 @@ def _update_words(additional_words: list) -> None:
     """
     for word in additional_words:
         tb.en.spelling.update({word: 1})
+        tb.en.spelling
     return None
 
 
@@ -136,7 +137,7 @@ def remove_punctuation(text: str) -> str:
 
 
 def stemmer(tokens: list) -> list:
-    """Stem works to their root form (e.g. flying -> fly, Beautiful -> Beauty)
+    """Stem works to their root form (e.g. flying -> fli, Beautiful -> Beauti)
 
     Parameters
     ----------
@@ -172,21 +173,23 @@ def lemmatizer(tokens: list) -> list:
     return lemmatized_tokens
 
 
-def remove_nltk_stopwords(tokens: list) -> list:
+def remove_nltk_stopwords(tokens: list, additional_stopwords: list = []) -> list:
     """remove stopwords from series
 
     Parameters
     ----------
     tokens : list
         list of tokenized words including stopwords
-
+    additional_stopwords:list
+        additional words to add to the stopwords (defualt empty list)
     Returns
     -------
     list
         token list without stopwords
     """
     stopwords = _initialise_nltk_stopwords()
-    without_stopwords = [item for item in tokens if item not in stopwords]
+    updated_stopwords = _update_nltk_stopwords(stopwords, additional_stopwords)
+    without_stopwords = [item for item in tokens if item not in updated_stopwords]
     return without_stopwords
 
 
@@ -204,6 +207,24 @@ def _initialise_nltk_stopwords() -> list:
         nltk.download("stopwords")
     nltk.data.path.append("../local_packages/nltk_data")
     stopwords = sw.words("english")
+    return stopwords
+
+
+def _update_nltk_stopwords(stopwords: list, additional_stopwords: list):
+    """add additional words to nltk stopwords
+    Parameters
+    ----------
+    stopwords: list
+        a list of stopwords
+    additional_stopwords:list
+        new words to add to the words to remove list
+    Returns
+    -------
+    list
+        a corpus of words to remove
+    """
+    for word in additional_stopwords:
+        stopwords.append(word)
     return stopwords
 
 

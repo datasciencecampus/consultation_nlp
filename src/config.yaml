@@ -3,3 +3,6 @@ business_terminology:
   - 'dpm'
   - 'admin'
   - 'timeliness'
+additional_stopwords:
+  - "census"
+  - "data"
