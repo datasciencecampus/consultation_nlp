@@ -13,7 +13,7 @@ from pandas.core.series import Series
 from rapidfuzz.fuzz import ratio
 
 
-def load_config(filepath: str):
+def load_config(filepath: str) -> dict:
     """Loads configuration settings from given filepath to
     yaml file
 
@@ -70,7 +70,7 @@ def _replace_blanks(series: Series) -> Series:
     return blanks_replaced
 
 
-def correct_spelling(string: str, additional_words: list) -> str:
+def correct_spelling(string: str, additional_words: list = []) -> str:
     """correct spelling using norvig spell-correct method
     (it has around 70% accuracy)
     Parameters
@@ -98,6 +98,7 @@ def _update_spelling_words(additional_words: list) -> None:
     """
     for word in additional_words:
         tb.en.spelling.update({word: 1})
+        tb.en.spelling
     return None
 
 
