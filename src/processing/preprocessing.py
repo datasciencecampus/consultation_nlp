@@ -7,13 +7,12 @@ import numpy as np
 import textblob as tb
 import yaml
 from nltk.corpus import stopwords as sw
-from nltk.corpus.reader.wordlist import WordListCorpusReader
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from pandas.core.series import Series
 from rapidfuzz.fuzz import ratio
 
 
-def load_config(filepath: str):
+def load_config(filepath: str) -> dict:
     """Loads configuration settings from given filepath to
     yaml file
 
@@ -70,7 +69,7 @@ def _replace_blanks(series: Series) -> Series:
     return blanks_replaced
 
 
-def correct_spelling(string: str, additional_words: list) -> str:
+def correct_spelling(string: str, additional_words: list = []) -> str:
     """correct spelling using norvig spell-correct method
     (it has around 70% accuracy)
     Parameters
@@ -98,6 +97,7 @@ def _update_spelling_words(additional_words: list) -> None:
     """
     for word in additional_words:
         tb.en.spelling.update({word: 1})
+        tb.en.spelling
     return None
 
 
@@ -137,7 +137,7 @@ def remove_punctuation(text: str) -> str:
 
 
 def stemmer(tokens: list) -> list:
-    """Stem works to their root form (e.g. flying -> fly, Beautiful -> Beauty)
+    """Stem works to their root form (e.g. flying -> fli, Beautiful -> Beauti)
 
     Parameters
     ----------
@@ -173,7 +173,7 @@ def lemmatizer(tokens: list) -> list:
     return lemmatized_tokens
 
 
-def remove_nltk_stopwords(tokens: list, additional_stopwords: list) -> list:
+def remove_nltk_stopwords(tokens: list, additional_stopwords: list = []) -> list:
     """remove stopwords from series
 
     Parameters
@@ -181,7 +181,7 @@ def remove_nltk_stopwords(tokens: list, additional_stopwords: list) -> list:
     tokens : list
         list of tokenized words including stopwords
     additional_stopwords:list
-        additional words to add to the stopwords
+        additional words to add to the stopwords (defualt empty list)
     Returns
     -------
     list
@@ -210,15 +210,17 @@ def _initialise_nltk_stopwords() -> list:
     return stopwords
 
 
-def _update_nltk_stopwords(stopwords: WordListCorpusReader, additional_stopwords: list):
+def _update_nltk_stopwords(stopwords: list, additional_stopwords: list):
     """add additional words to nltk stopwords
     Parameters
     ----------
+    stopwords: list
+        a list of stopwords
     additional_stopwords:list
         new words to add to the words to remove list
     Returns
     -------
-    WordListCorpusReader
+    list
         a corpus of words to remove
     """
     for word in additional_stopwords:
