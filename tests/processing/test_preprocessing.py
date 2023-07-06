@@ -6,12 +6,19 @@ import textblob as tb
 from pandas import Series
 
 from src.processing.preprocessing import (
+    _initialise_nltk_stopwords,
     _replace_blanks,
+    _update_nltk_stopwords,
     _update_spelling_words,
     correct_spelling,
     fuzzy_compare_ratio,
+    lemmatizer,
     load_config,
+    rejoin_tokens,
     remove_blank_rows,
+    remove_nltk_stopwords,
+    remove_punctuation,
+    stemmer,
 )
 
 
@@ -105,6 +112,73 @@ class TestFuzzyCompareRatio:
         expected = Series([100.00, 0.0])
         actual = fuzzy_compare_ratio(base, comparison)
         assert all(expected == actual), "fuzzy scoring not working correctly"
+
+
+class TestRemovePunctuation:
+    def test_remove_punctuation(self):
+        test_string = "my #$%&()*+,-./:;<=>?@[]^_`{|}~?name"
+        actual = remove_punctuation(test_string)
+        expected = "my name"
+        assert actual == expected, "punctuation not removed correctly"
+
+
+class TestStemmer:
+    def test_stemmer(self):
+        word_list = ["flying", "fly", "Beautiful", "Beauty"]
+        actual = stemmer(word_list)
+        expected = ["fli", "fli", "beauti", "beauti"]
+        assert actual == expected, "words are not being stemmed correctly"
+
+
+class TestLemmatizer:
+    def test_lemmatization(self):
+        word_list = ["house", "houses", "housing"]
+        actual = lemmatizer(word_list)
+        expected = ["house", "house", "housing"]
+        assert actual == expected, "words are not being lemmatized correctly"
+
+
+class TestRemoveNLTKStopwords:
+    def test_remove_standard_stopwords(self):
+        tokens = ["my", "name", "is", "elf", "who", "are", "you"]
+        actual = remove_nltk_stopwords(tokens, [])
+        expected = ["name", "elf"]
+        assert actual == expected, "core stopwords not being removed correctly"
+
+    def test_remove_additional_stopwords(self):
+        tokens = ["my", "name", "is", "elf", "who", "are", "you"]
+        actual = remove_nltk_stopwords(tokens, ["elf"])
+        expected = ["name"]
+        assert actual == expected, "additional stopwords not being removed correctly"
+
+
+class TestInitialiseNLTKStopwords:
+    def test_return_stopwords_list(self):
+        stopwords = _initialise_nltk_stopwords()
+        assert isinstance(stopwords, list), "Did not return a list of stopwords"
+
+    def test_key_stopwords(self):
+        stopwords = _initialise_nltk_stopwords()
+        expected = ["i", "we", "you"]
+        actual = [word in stopwords for word in expected]
+        assert all(actual), "expected key words missing from stopwords"
+
+
+class TestUpdateNLTKStopwords:
+    def test_add_word_to_stopwords(self):
+        stopwords = _initialise_nltk_stopwords()
+        additional_words = ["elf", "santa"]
+        new_stopwords = _update_nltk_stopwords(stopwords, additional_words)
+        actual = [word in new_stopwords for word in additional_words]
+        assert all(actual), "new words not added to stopwords"
+
+
+class TestRejoinTokens:
+    def test_region_tokens(self):
+        tokens = ["my", "name", "is", "elf"]
+        actual = rejoin_tokens(tokens)
+        expected = "my name is elf"
+        assert actual == expected, "did not rejoin tokens correctly"
 
 
 if __name__ == "__main__":
