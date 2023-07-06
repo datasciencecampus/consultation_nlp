@@ -1,3 +1,4 @@
+import sys
 import unittest
 
 import numpy as np
@@ -138,6 +139,7 @@ class TestLemmatizer:
         assert actual == expected, "words are not being lemmatized correctly"
 
 
+@pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 class TestRemoveNLTKStopwords:
     def test_remove_standard_stopwords(self):
         tokens = ["my", "name", "is", "elf", "who", "are", "you"]
@@ -152,6 +154,7 @@ class TestRemoveNLTKStopwords:
         assert actual == expected, "additional stopwords not being removed correctly"
 
 
+@pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 class TestInitialiseNLTKStopwords:
     def test_return_stopwords_list(self):
         stopwords = _initialise_nltk_stopwords()
@@ -164,6 +167,7 @@ class TestInitialiseNLTKStopwords:
         assert all(actual), "expected key words missing from stopwords"
 
 
+@pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
 class TestUpdateNLTKStopwords:
     def test_add_word_to_stopwords(self):
         stopwords = _initialise_nltk_stopwords()
