@@ -1,10 +1,11 @@
 import sys
 import unittest
+from itertools import repeat
 
 import numpy as np
 import pytest
 import textblob as tb
-from pandas import Series
+from pandas import DataFrame, Series
 
 from src.processing.preprocessing import (
     _initialise_nltk_stopwords,
@@ -12,7 +13,10 @@ from src.processing.preprocessing import (
     _update_nltk_stopwords,
     _update_spelling_words,
     correct_spelling,
+    extract_feature_count,
     fuzzy_compare_ratio,
+    get_total_feature_count,
+    initialise_update_stopwords,
     lemmatizer,
     load_config,
     rejoin_tokens,
@@ -144,7 +148,7 @@ class TestRemoveNLTKStopwords:
     @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_remove_standard_stopwords(self):
         tokens = ["my", "name", "is", "elf", "who", "are", "you"]
-        actual = remove_nltk_stopwords(tokens, [])
+        actual = remove_nltk_stopwords(tokens)
         expected = ["name", "elf"]
         assert actual == expected, "core stopwords not being removed correctly"
 
@@ -154,6 +158,15 @@ class TestRemoveNLTKStopwords:
         actual = remove_nltk_stopwords(tokens, ["elf"])
         expected = ["name"]
         assert actual == expected, "additional stopwords not being removed correctly"
+
+
+class TestInitialiseUpdateStopwords:
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
+    def test_add_word_to_stopwords(self):
+        additional_words = ["elf", "santa"]
+        new_stopwords = initialise_update_stopwords(additional_words)
+        actual = [word in new_stopwords for word in additional_words]
+        assert all(actual), "new words not added to stopwords"
 
 
 class TestInitialiseNLTKStopwords:
@@ -186,6 +199,43 @@ class TestRejoinTokens:
         actual = rejoin_tokens(tokens)
         expected = "my name is elf"
         assert actual == expected, "did not rejoin tokens correctly"
+
+
+class TestExtractFeatureCount:
+    def test_feature_count(self):
+        data = Series(["My name is elf"])
+        expected = DataFrame([[1, 1, 1, 1]], columns=("elf", "is", "my", "name"))
+        actual = extract_feature_count(data)
+        assert all(expected == actual), "Does not match expected output"
+
+    def test_remove_stopwords(self):
+        stopwords = ["is", "my"]
+        data = Series(["My name is elf"])
+        actual = extract_feature_count(data, stop_words=stopwords)
+        expected = DataFrame([[1, 1]], columns=("elf", "name"))
+        assert all(expected == actual), "Does not remove stopwords"
+
+    def test_ngrams(self):
+        data = Series(["My name is elf"])
+        actual = extract_feature_count(data, ngram_range=(1, 2))
+        expected = DataFrame(
+            [repeat(1, 7)],
+            columns=["elf", "is", "is elf", "my", "my name", "name", "name is"],
+        )
+        assert all(expected == actual), "Does not handle ngrams"
+
+
+class testGetTotalFeatureCount:
+    def test_get_total_feature_count(self):
+        df = DataFrame(
+            [[1, 1, 1, 1, 0], [0, 1, 1, 1, 1]],
+            columns=["elf", "is", "my", "name", "santa"],
+        )
+        expected = DataFrame(
+            [1, 2, 2, 2, 1], columns=["elf", "is", "my", "name", "santa"]
+        )
+        actual = get_total_feature_count(df)
+        assert all(expected == actual), "Does not correctly sum total features"
 
 
 if __name__ == "__main__":

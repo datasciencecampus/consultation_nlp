@@ -1,15 +1,12 @@
-# import re
-# import string
-# import matplotlib.pyplot as plt
-# import mglearn
-# import numpy as np
 import pandas as pd
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 
 from src.processing.preprocessing import (  # stemmer,
     correct_spelling,
+    extract_feature_count,
     fuzzy_compare_ratio,
+    initialise_update_stopwords,
     lemmatizer,
     load_config,
     rejoin_tokens,
@@ -19,13 +16,18 @@ from src.processing.preprocessing import (  # stemmer,
 )
 from src.processing.visualisation import create_wordcloud  # print_row_by_row,
 
+# import re
+# import string
+# import matplotlib.pyplot as plt
+# import mglearn
+# import numpy as np
 # from sklearn.decomposition import LatentDirichletAllocation
 # from importlib import reload
 # reload(preprocessing)
 
 
 def run_pipeline():
-    """run entire consultation nlp pipeline"""
+    """run consultation nlp pipeline"""
     config = load_config("src/config.yaml")
     raw_data = pd.read_csv(config["raw_data_path"], encoding="cp1252")
     raw_series = raw_data["qu_3"]
@@ -53,6 +55,11 @@ def run_pipeline():
     print(rejoined_words, impact_of_spell_correction)
 
     """#Topic Modelling"""
+    stopwords = initialise_update_stopwords(config["additional_stopwords"])
+    features = extract_feature_count(
+        without_blank_rows, ngram_range=(1, 2), min_df=0.2, stop_words=stopwords
+    )
+    print(features)
 
     vect = CountVectorizer(max_features=5)
     coliv_wordsbows = vect.fit(raw_series)
