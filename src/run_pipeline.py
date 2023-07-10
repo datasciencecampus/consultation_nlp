@@ -1,18 +1,18 @@
 import pandas as pd
 from nltk.tokenize import word_tokenize
-from sklearn.feature_extraction.text import CountVectorizer
 
-from src.processing.preprocessing import (  # stemmer,
-    correct_spelling,
+from src.processing.preprocessing import (
     extract_feature_count,
     fuzzy_compare_ratio,
+    get_total_feature_count,
     initialise_update_stopwords,
-    lemmatizer,
     load_config,
     rejoin_tokens,
     remove_blank_rows,
     remove_nltk_stopwords,
     remove_punctuation,
+    shorten_tokens,
+    spellcorrect_series,
 )
 from src.processing.visualisation import create_wordcloud  # print_row_by_row,
 
@@ -29,42 +29,39 @@ from src.processing.visualisation import create_wordcloud  # print_row_by_row,
 def run_pipeline():
     """run consultation nlp pipeline"""
     config = load_config("src/config.yaml")
-    raw_data = pd.read_csv(config["raw_data_path"], encoding="cp1252")
-    raw_series = raw_data["qu_3"]
+    colnames = [f"qu_{number+1}" for number in range(0, 33)]
+    raw_data = pd.read_csv(config["raw_data_path"], encoding="cp1252", names=colnames)
+    raw_series = raw_data["qu_11"]
     # TODO add clean_data parent function
     lower_series = raw_series.str.lower()
     without_blank_rows = remove_blank_rows(lower_series)
-    spelling_fixed = without_blank_rows.apply(
-        correct_spelling, config["business_terminology"]
+    spelling_fixed = spellcorrect_series(
+        without_blank_rows, config["buisness_terminology"]
     )
     impact_of_spell_correction = fuzzy_compare_ratio(without_blank_rows, spelling_fixed)
-    # TODO consider whether there are words we need to fix manually? i.e timliness
     #      print_row_by_row(without_blank_rows,spelling_fixed)
     no_punctuation_series = spelling_fixed.apply(remove_punctuation)
     word_tokens = no_punctuation_series.apply(word_tokenize)
-    # stemmed_tokens = word_tokens.apply(stemmer)
-    lemmatized_tokens = word_tokens.apply(lemmatizer)
-    without_stopwords = lemmatized_tokens.apply(
+    short_tokens = shorten_tokens(word_tokens, config["lemmatize"])
+    without_stopwords = short_tokens.apply(
         lambda x: remove_nltk_stopwords(x, config["additional_stopwords"])
     )
     rejoined_words = without_stopwords.apply(rejoin_tokens)
-    text = " ".join(rejoined_words)
-    create_wordcloud(text)
-
-    # just printing to overcome qa aspect
-    print(rejoined_words, impact_of_spell_correction)
-
-    """#Topic Modelling"""
+    all_text_combined = " ".join(rejoined_words)
+    create_wordcloud(all_text_combined)
     stopwords = initialise_update_stopwords(config["additional_stopwords"])
     features = extract_feature_count(
-        without_blank_rows, ngram_range=(1, 2), min_df=0.2, stop_words=stopwords
+        series=spelling_fixed,
+        ngram_range=config["feature_count"]["ngram_range"],
+        min_df=config["feature_count"]["min_df"],
+        max_df=config["feature_count"]["max_df"],
+        max_features=config["feature_count"]["max_features"],
+        lowercase=config["feature_count"]["lowercase"],
+        stop_words=stopwords,
     )
-    print(features)
+    total_features = get_total_feature_count(features)
 
-    vect = CountVectorizer(max_features=5)
-    coliv_wordsbows = vect.fit(raw_series)
-
-    print(coliv_wordsbows.vocabulary_)
+    print(features, rejoined_words, total_features, impact_of_spell_correction)
 
 
 #    lda5 = LatentDirichletAllocation(

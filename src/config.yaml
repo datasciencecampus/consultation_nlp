@@ -1,7 +1,7 @@
-raw_data_path: "data/raw/2023_consultation_mock_data.csv"
+raw_data_path: "data/raw/20230710_consultation_ingest.csv"
 buisness_terminology: #words to update spelling with associated weight
   dpm: 1
-  admin: 1 #needs higher weight to override amin -> main correction
+  admin: 1
   timeliness: 1
 additional_stopwords: #words to filter
   - "census"
@@ -9,7 +9,7 @@ additional_stopwords: #words to filter
 lemmatize: True #select False to use Stemmer
 feature_count:
   ngram_range: !!python/tuple [1,2] #tuple range of defaults to unigram (1,1)
-  min_df: 0.2 #float (proportion) or int (count)
+  min_df: 0.1 #float (proportion) or int (count)
   max_df: 1.0 #float (proportion) or int (count)
   max_features: null #null converts to None, or int value
   lowercase: True #whether to convert all words to lowercase
