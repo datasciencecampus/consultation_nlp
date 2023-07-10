@@ -1,1 +1,8 @@
-raw_data_path: "data/raw/20230619_census_responses.csv"
+raw_data_path: "data/raw/2023_consultation_mock_data.csv"
+business_terminology:
+  - 'dpm'
+  - 'admin'
+  - 'timeliness'
+additional_stopwords:
+  - "census"
+  - "data"
