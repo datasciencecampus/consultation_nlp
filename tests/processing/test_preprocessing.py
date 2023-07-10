@@ -8,11 +8,11 @@ import textblob as tb
 from pandas import DataFrame, Series
 
 from src.processing.preprocessing import (
+    _correct_spelling,
     _initialise_nltk_stopwords,
     _replace_blanks,
     _update_nltk_stopwords,
     _update_spelling_words,
-    correct_spelling,
     extract_feature_count,
     fuzzy_compare_ratio,
     get_total_feature_count,
@@ -23,6 +23,7 @@ from src.processing.preprocessing import (
     remove_blank_rows,
     remove_nltk_stopwords,
     remove_punctuation,
+    spellcorrect_series,
     stemmer,
 )
 
@@ -86,27 +87,42 @@ class TestReplaceBlanks:
         ), "output is not <class 'pandas.core.series.Series'>"
 
 
+class TestSpellCorrectSeries:
+    def test_spell_correct_series(self):
+        series = Series(["I live in a housr", "I own a housr"])
+        actual = spellcorrect_series(series)
+        expected = Series(["I live in a house", "I own a house"])
+        assert all(actual == expected), "Not fixed spelling across series"
+
+    def test_update_spelling_on_series(self):
+        series = Series(["I live in a housr", "I own a housr"])
+        additional_words = {"housr": 1}
+        actual = spellcorrect_series(series, additional_words)
+        expected = Series(["I live in a housr", "I own a housr"])
+        assert all(actual == expected), "Updated spelling doesn't work across series"
+
+
 class TestCorrectSpelling:
     def test_spelling_fixed(self):
-        house_str = "I live in a housr"
-        corrected = correct_spelling(house_str)
-        assert corrected == "I live in a house", "spelling not fixed correctly"
+        house_str = "I live flar away"
+        corrected = _correct_spelling(house_str)
+        assert corrected == "I live far away", "spelling not fixed correctly"
 
     def test_word_update(self):
-        additional_words = ["housr"]
-        house_str = "I live in a housr"
-        corrected = correct_spelling(house_str, additional_words)
+        additional_words = {"flar": 1}
+        house_str = "I live flar away"
+        corrected = _correct_spelling(house_str, additional_words)
         assert (
-            corrected == "I live in a housr"
+            corrected == "I live flar away"
         ), "spelling word list not correctly updated"
 
 
 class TestUpdateSpellingWords:
     def test_update_word_list(self):
-        additional_words = ["housr"]
-        _update_spelling_words(additional_words)
+        additional_words = {"monsterp": 1}
+        tb.en.spelling = _update_spelling_words(additional_words)
         assert (
-            "housr" in tb.en.spelling.keys()
+            "monsterp" in tb.en.spelling.keys()
         ), "spelling word list not updated correctly"
 
 

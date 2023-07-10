@@ -1,8 +1,15 @@
 raw_data_path: "data/raw/2023_consultation_mock_data.csv"
-business_terminology:
-  - 'dpm'
-  - 'admin'
-  - 'timeliness'
-additional_stopwords:
+buisness_terminology: #words to update spelling with associated weight
+  dpm: 1
+  admin: 1 #needs higher weight to override amin -> main correction
+  timeliness: 1
+additional_stopwords: #words to filter
   - "census"
   - "data"
+lemmatize: True #select False to use Stemmer
+feature_count:
+  ngram_range: !!python/tuple [1,2] #tuple range of defaults to unigram (1,1)
+  min_df: 0.2 #float (proportion) or int (count)
+  max_df: 1.0 #float (proportion) or int (count)
+  max_features: null #null converts to None, or int value
+  lowercase: True #whether to convert all words to lowercase

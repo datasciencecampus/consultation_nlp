@@ -32,7 +32,7 @@ def load_config(filepath: str) -> dict:
         raise TypeError("filepath must be a string")
 
     with open(filepath, "r") as file:
-        config = yaml.safe_load(file)
+        config = yaml.load(file, Loader=yaml.Loader)
     return config
 
 
@@ -71,36 +71,58 @@ def _replace_blanks(series: Series) -> Series:
     return blanks_replaced
 
 
-def correct_spelling(string: str, additional_words: list = []) -> str:
+def spellcorrect_series(series: Series, additional_words: dict = {}) -> Series:
+    """fix spelling across series using the norvig spell-correct method
+    Parameters
+    ----------
+    series: Series
+        the series of text strings you want to pass your spell checker on
+    additional_words:dict
+        a dictionary of words and weights for each word
+    Returns
+    -------
+    Series
+        a series with words spelling corrected"""
+    corrected_series = series.apply(
+        lambda str: _correct_spelling(str, additional_words)
+    )
+    return corrected_series
+
+
+def _correct_spelling(string: str, additional_words: dict = {}) -> str:
     """correct spelling using norvig spell-correct method
     (it has around 70% accuracy)
     Parameters
     ----------
     string:str
         string you want to fix the spelling in
+    additional_words:dict, default = None
+        words to add to the textblob dictionary, with associated weights.
+        higher weights give greater precedence to the weighted word.
     Returns
     -------
     str
         string with the spelling fixed"""
-    _update_spelling_words(additional_words)
+    tb.en.spelling = _update_spelling_words(additional_words)
     spelling_fixed = str(tb.TextBlob(string).correct())
     return spelling_fixed
 
 
-def _update_spelling_words(additional_words: list) -> None:
+def _update_spelling_words(additional_words: dict) -> None:
     """update word in the textblob library with commonly used business word
     Parameters
     ----------
-    additional_words:list
-        words to add to the textblob dictionary
+    additional_words:dict
+        words to add to the textblob dictionary, with associated weights.
+        higher weights give greater precedence to the weighted word.
     Returns
     -------
-    None
+    dict
+        a dictionary of words and updated weights
     """
-    for word in additional_words:
-        tb.en.spelling.update({word: 1})
-        tb.en.spelling
-    return None
+    for word, weight in additional_words.items():
+        tb.en.spelling.update({word: weight})
+    return tb.en.spelling
 
 
 def fuzzy_compare_ratio(base: Series, comparison: Series) -> Series:
@@ -136,6 +158,21 @@ def remove_punctuation(text: str) -> str:
     """
     new_text = re.sub(string=text, pattern="[{}]".format(string.punctuation), repl="")
     return new_text
+
+
+def shorten_tokens(word_tokens: list, lemmatize: bool = True) -> list:
+    """Shorten tokens to root words
+    Parameters
+    ----------
+    word_tokens:list
+        list of word tokens to shorten
+    lemmatize: bool, default = True
+        whether to use lemmatizer or revert back to False (stemmer)"""
+    if lemmatize:
+        short_tokens = word_tokens.apply(lemmatizer)
+    else:
+        short_tokens = word_tokens.apply(stemmer)
+    return short_tokens
 
 
 def stemmer(tokens: list) -> list:
