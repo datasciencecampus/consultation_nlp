@@ -306,8 +306,8 @@ def extract_feature_count(
     ngram_range: tuple[float, float] = (1, 1),
     stop_words: ArrayLike = None,
     lowercase: bool = True,
-    min_df: float | int = 1,
-    max_df: float | int = 1.0,
+    min_df: float in range[0.0, 1.0] or int = 1,
+    max_df: float in range[0.0, 1.0] or int = 1.0,
 ):
     """create a text feature count dataframe from series
     Paramaters
