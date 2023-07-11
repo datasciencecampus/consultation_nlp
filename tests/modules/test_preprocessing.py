@@ -9,6 +9,7 @@ from pandas import Series
 from src.modules.preprocessing import (
     _correct_spelling,
     _initialise_nltk_component,
+    _remove_punctuation_string,
     _replace_blanks,
     _update_nltk_stopwords,
     _update_spelling_words,
@@ -104,14 +105,6 @@ class TestCorrectSpelling:
         corrected = _correct_spelling(house_str)
         assert corrected == "I live far away", "spelling not fixed correctly"
 
-    def test_word_update(self):
-        additional_words = {"flar": 1}
-        house_str = "I live flar away"
-        corrected = _correct_spelling(house_str, additional_words)
-        assert (
-            corrected == "I live flar away"
-        ), "spelling word list not correctly updated"
-
 
 class TestUpdateSpellingWords:
     def test_update_word_list(self):
@@ -124,8 +117,16 @@ class TestUpdateSpellingWords:
 
 class TestRemovePunctuation:
     def test_remove_punctuation(self):
+        series = Series(["this is!", "my series?"])
+        actual = remove_punctuation(series)
+        expected = Series(["this is", "my series"])
+        assert all(actual == expected), "Remove punctuation not working on series"
+
+
+class TestRemovePunctuationstring:
+    def test_remove_punctuation(self):
         test_string = "my #$%&()*+,-./:;<=>?@[]^_`{|}~?name"
-        actual = remove_punctuation(test_string)
+        actual = _remove_punctuation_string(test_string)
         expected = "my name"
         assert actual == expected, "punctuation not removed correctly"
 

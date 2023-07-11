@@ -80,27 +80,22 @@ def spellcorrect_series(series: Series, additional_words: dict = {}) -> Series:
     -------
     Series
         a series with words spelling corrected"""
-    corrected_series = series.apply(
-        lambda str: _correct_spelling(str, additional_words)
-    )
+    tb.en.spelling = _update_spelling_words(additional_words)
+    corrected_series = series.apply(lambda str: _correct_spelling(str))
     return corrected_series
 
 
-def _correct_spelling(string: str, additional_words: dict = {}) -> str:
+def _correct_spelling(string: str) -> str:
     """correct spelling using norvig spell-correct method
     (it has around 70% accuracy)
     Parameters
     ----------
     string:str
         string you want to fix the spelling in
-    additional_words:dict, default = None
-        words to add to the textblob dictionary, with associated weights.
-        higher weights give greater precedence to the weighted word.
     Returns
     -------
     str
         string with the spelling fixed"""
-    tb.en.spelling = _update_spelling_words(additional_words)
     spelling_fixed = str(tb.TextBlob(string).correct())
     return spelling_fixed
 
@@ -122,7 +117,14 @@ def _update_spelling_words(additional_words: dict) -> None:
     return tb.en.spelling
 
 
-def remove_punctuation(text: str) -> str:
+def remove_punctuation(series: Series) -> Series:
+    """Remove punctuation from series of strings"""
+    _initialise_nltk_component("tokenizers/punkt", "punkt")
+    punct_removed = series.apply(_remove_punctuation_string)
+    return punct_removed
+
+
+def _remove_punctuation_string(text: str) -> str:
     """Remove punctuation from string
 
     Parameters
@@ -135,7 +137,6 @@ def remove_punctuation(text: str) -> str:
     str
         text string without punctuation
     """
-    _initialise_nltk_component("tokenizers/punkt", "punkt")
     new_text = re.sub(string=text, pattern="[{}]".format(string.punctuation), repl="")
     return new_text
 
@@ -206,7 +207,7 @@ def _initialise_nltk_component(extension: str, download_object: str):
     None
     """
     username = os.getenv("username")
-    path = "c:/Users/" + username + "/AppData/Roaming/nltk_data" + extension
+    path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
     if not os.path.exists(path):
         nltk.download(download_object)
     nltk.data.path.append("../local_packages/nltk_data")

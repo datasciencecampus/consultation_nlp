@@ -33,14 +33,14 @@ def run_pipeline():
     )
     raw_series = raw_data["qu_11"]
     # TODO add clean_data parent function
-    lower_series = raw_series.str.lower()
-    without_blank_rows = remove_blank_rows(lower_series)
+    without_blank_rows = remove_blank_rows(raw_series)
     spelling_fixed = spellcorrect_series(
         without_blank_rows, config["buisness_terminology"]
     )
     impact_of_spell_correction = fuzzy_compare_ratio(without_blank_rows, spelling_fixed)
+    lower_series = spelling_fixed.str.lower()
     #      print_row_by_row(without_blank_rows,spelling_fixed)
-    no_punctuation_series = spelling_fixed.apply(remove_punctuation)
+    no_punctuation_series = remove_punctuation(lower_series)
     word_tokens = no_punctuation_series.apply(word_tokenize)
     short_tokens = shorten_tokens(word_tokens, config["lemmatize"])
     without_stopwords = short_tokens.apply(
@@ -60,13 +60,15 @@ def run_pipeline():
         stop_words=stopwords,
     )
     total_features = get_total_feature_count(features)
-    retrieve_named_entities(spelling_fixed)
-    print(features, rejoined_words, total_features, impact_of_spell_correction)
+    entities = retrieve_named_entities(without_blank_rows)
+
+    print(impact_of_spell_correction, total_features, entities)
 
 
 # code to execute script from terminal
 if __name__ == "__main__":
     run_pipeline()
+
 
 #    lda5 = LatentDirichletAllocation(
 #        n_components=5, learning_method="batch", max_iter=25, random_state=0
