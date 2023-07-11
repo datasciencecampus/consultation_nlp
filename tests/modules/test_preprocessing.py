@@ -1,5 +1,3 @@
-import sys
-
 import numpy as np
 import pytest
 import textblob as tb
@@ -140,7 +138,6 @@ class TestStemmer:
 
 
 class TestLemmatizer:
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_lemmatization(self):
         word_list = ["house", "houses", "housing"]
         actual = lemmatizer(word_list)
@@ -149,14 +146,12 @@ class TestLemmatizer:
 
 
 class TestRemoveNLTKStopwords:
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_remove_standard_stopwords(self):
         tokens = ["my", "name", "is", "elf", "who", "are", "you"]
         actual = remove_nltk_stopwords(tokens)
         expected = ["name", "elf"]
         assert actual == expected, "core stopwords not being removed correctly"
 
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_remove_additional_stopwords(self):
         tokens = ["my", "name", "is", "elf", "who", "are", "you"]
         actual = remove_nltk_stopwords(tokens, ["elf"])
@@ -165,7 +160,6 @@ class TestRemoveNLTKStopwords:
 
 
 class TestInitialiseUpdateStopwords:
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_add_word_to_stopwords(self):
         additional_words = ["elf", "santa"]
         new_stopwords = initialise_update_stopwords(additional_words)
@@ -174,7 +168,6 @@ class TestInitialiseUpdateStopwords:
 
 
 class TestUpdateNLTKStopwords:
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_add_word_to_stopwords(self):
         _initialise_nltk_component("corpora/stopwords", "stopwords")
         stopwords = sw.words("english")
