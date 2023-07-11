@@ -1,10 +1,8 @@
 import pandas as pd
 from nltk.tokenize import word_tokenize
 
-from src.processing.preprocessing import (
-    extract_feature_count,
-    fuzzy_compare_ratio,
-    get_total_feature_count,
+from src.modules.analysis import extract_feature_count, get_total_feature_count
+from src.modules.preprocessing import (
     initialise_update_stopwords,
     load_config,
     rejoin_tokens,
@@ -14,14 +12,13 @@ from src.processing.preprocessing import (
     shorten_tokens,
     spellcorrect_series,
 )
-from src.processing.visualisation import create_wordcloud  # print_row_by_row,
+from src.modules.quality_checks import fuzzy_compare_ratio  # print_row_by_row,
+from src.modules.visualisation import create_wordcloud
 
-# import re
-# import string
 # import matplotlib.pyplot as plt
 # import mglearn
-# import numpy as np
 # from sklearn.decomposition import LatentDirichletAllocation
+
 # from importlib import reload
 # reload(preprocessing)
 
@@ -63,6 +60,10 @@ def run_pipeline():
 
     print(features, rejoined_words, total_features, impact_of_spell_correction)
 
+
+# code to execute script from terminal
+if __name__ == "__main__":
+    run_pipeline()
 
 #    lda5 = LatentDirichletAllocation(
 #        n_components=5, learning_method="batch", max_iter=25, random_state=0

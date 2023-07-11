@@ -1,21 +1,17 @@
 import sys
-import unittest
-from itertools import repeat
 
 import numpy as np
 import pytest
 import textblob as tb
-from pandas import DataFrame, Series
+from nltk.corpus import stopwords as sw
+from pandas import Series
 
-from src.processing.preprocessing import (
+from src.modules.preprocessing import (
     _correct_spelling,
-    _initialise_nltk_stopwords,
+    _initialise_nltk_component,
     _replace_blanks,
     _update_nltk_stopwords,
     _update_spelling_words,
-    extract_feature_count,
-    fuzzy_compare_ratio,
-    get_total_feature_count,
     initialise_update_stopwords,
     lemmatizer,
     load_config,
@@ -126,15 +122,6 @@ class TestUpdateSpellingWords:
         ), "spelling word list not updated correctly"
 
 
-class TestFuzzyCompareRatio:
-    def test_ratios(self):
-        base = Series(["this is", "this isn't"])
-        comparison = Series(["this is", "yellow"])
-        expected = Series([100.00, 0.0])
-        actual = fuzzy_compare_ratio(base, comparison)
-        assert all(expected == actual), "fuzzy scoring not working correctly"
-
-
 class TestRemovePunctuation:
     def test_remove_punctuation(self):
         test_string = "my #$%&()*+,-./:;<=>?@[]^_`{|}~?name"
@@ -185,24 +172,11 @@ class TestInitialiseUpdateStopwords:
         assert all(actual), "new words not added to stopwords"
 
 
-class TestInitialiseNLTKStopwords:
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
-    def test_return_stopwords_list(self):
-        stopwords = _initialise_nltk_stopwords()
-        assert isinstance(stopwords, list), "Did not return a list of stopwords"
-
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
-    def test_key_stopwords(self):
-        stopwords = _initialise_nltk_stopwords()
-        expected = ["i", "we", "you"]
-        actual = [word in stopwords for word in expected]
-        assert all(actual), "expected key words missing from stopwords"
-
-
 class TestUpdateNLTKStopwords:
     @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Cannot download file")
     def test_add_word_to_stopwords(self):
-        stopwords = _initialise_nltk_stopwords()
+        _initialise_nltk_component("corpora/stopwords", "stopwords")
+        stopwords = sw.words("english")
         additional_words = ["elf", "santa"]
         new_stopwords = _update_nltk_stopwords(stopwords, additional_words)
         actual = [word in new_stopwords for word in additional_words]
@@ -217,42 +191,6 @@ class TestRejoinTokens:
         assert actual == expected, "did not rejoin tokens correctly"
 
 
-class TestExtractFeatureCount:
-    def test_feature_count(self):
-        data = Series(["My name is elf"])
-        expected = DataFrame([[1, 1, 1, 1]], columns=("elf", "is", "my", "name"))
-        actual = extract_feature_count(data)
-        assert all(expected == actual), "Does not match expected output"
-
-    def test_remove_stopwords(self):
-        stopwords = ["is", "my"]
-        data = Series(["My name is elf"])
-        actual = extract_feature_count(data, stop_words=stopwords)
-        expected = DataFrame([[1, 1]], columns=("elf", "name"))
-        assert all(expected == actual), "Does not remove stopwords"
-
-    def test_ngrams(self):
-        data = Series(["My name is elf"])
-        actual = extract_feature_count(data, ngram_range=(1, 2))
-        expected = DataFrame(
-            [repeat(1, 7)],
-            columns=["elf", "is", "is elf", "my", "my name", "name", "name is"],
-        )
-        assert all(expected == actual), "Does not handle ngrams"
-
-
-class testGetTotalFeatureCount:
-    def test_get_total_feature_count(self):
-        df = DataFrame(
-            [[1, 1, 1, 1, 0], [0, 1, 1, 1, 1]],
-            columns=["elf", "is", "my", "name", "santa"],
-        )
-        expected = DataFrame(
-            [1, 2, 2, 2, 1], columns=["elf", "is", "my", "name", "santa"]
-        )
-        actual = get_total_feature_count(df)
-        assert all(expected == actual), "Does not correctly sum total features"
-
-
-if __name__ == "__main__":
-    unittest.main()
+class TestInitialiseNLTKComponent:
+    def test_initialise_component(self):
+        pass

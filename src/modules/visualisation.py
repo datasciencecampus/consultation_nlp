@@ -1,24 +1,5 @@
 import matplotlib.pyplot as plt
-from pandas import Series
 from wordcloud import WordCloud
-
-
-def print_row_by_row(base: Series, comparison: Series) -> None:
-    """print each pair of words row by row
-    Parameters
-    ----------
-    base: Series
-        the base series for comparison
-    comparison: Series
-        the series you want to compare against
-    Returns
-    -------
-    None
-    """
-    for i in base.index:
-        print(base[i])
-        print(comparison[i])
-    return None
 
 
 def create_wordcloud(text: str, filename: str = "data/outputs/wordcloud.jpeg"):
