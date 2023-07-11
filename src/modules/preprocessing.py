@@ -1,6 +1,7 @@
 import os
 import re
 import string
+import sys
 
 import nltk
 import numpy as np
@@ -210,7 +211,10 @@ def _initialise_nltk_component(extension: str, download_object: str):
     path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
     if not os.path.exists(path):
         nltk.download(download_object)
-    nltk.data.path.append("../local_packages/nltk_data")
+    if sys.platform.startswith("linux"):
+        nltk.data.path.append("../usr/share/nltk_data")
+    else:
+        nltk.data.path.append("../local_packages/nltk_data")
     return None
 
 
