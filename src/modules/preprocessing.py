@@ -196,7 +196,40 @@ def lemmatizer(tokens: list) -> list:
 
 
 def _initialise_nltk_component(extension: str, download_object: str):
-    """download nltk component from package
+    """spliter function to determine which initialisation path to run
+    Parameters
+    ----------
+    extension: str
+        the filepath extension leading to where the model is saved
+    download_object: str
+        the object to download from nltk
+    Returns
+    -------
+    None
+    """
+    if sys.platform.startswith("linux"):
+        _initialise_nltk_linux(download_object)
+    else:
+        _initialise_nltk_windows(extension, download_object)
+
+
+def _initialise_nltk_linux(download_object: str) -> None:
+    """initialise nltk component for linux  environment (for github actions)
+    Parameters
+    ----------
+    download_object: str
+        nltk object to download
+    Returns
+    -------
+    None
+    """
+    nltk.download(download_object)
+    nltk.data.path.append("../home/runner/nltk_data")
+    return None
+
+
+def _initialise_nltk_windows(extension: str, download_object: str):
+    """initialise nltk component for a windows environment
     Parameters
     ----------
     extension: str
@@ -211,10 +244,6 @@ def _initialise_nltk_component(extension: str, download_object: str):
     path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
     if not os.path.exists(path):
         nltk.download(download_object)
-    # Set path for runs on github actions
-    if sys.platform.startswith("linux"):
-        nltk.data.path.append("../home/runner/nltk_data")
-    else:
         nltk.data.path.append("../local_packages/nltk_data")
     return None
 

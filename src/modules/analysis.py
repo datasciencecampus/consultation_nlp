@@ -82,7 +82,7 @@ def get_total_feature_count(features: DataFrame) -> DataFrame:
     return total_feature_count
 
 
-def retrieve_named_entities(series: Series) -> list[list[str]]:
+def retrieve_named_entities(series: Series) -> list:
     """retrieve any named entities from the series
     Parameters
     ----------
