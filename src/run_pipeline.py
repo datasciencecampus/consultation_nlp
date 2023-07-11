@@ -1,7 +1,11 @@
 import pandas as pd
 from nltk.tokenize import word_tokenize
 
-from src.modules.analysis import extract_feature_count, get_total_feature_count
+from src.modules.analysis import (
+    extract_feature_count,
+    get_total_feature_count,
+    retrieve_named_entities,
+)
 from src.modules.preprocessing import (
     initialise_update_stopwords,
     load_config,
@@ -19,15 +23,14 @@ from src.modules.visualisation import create_wordcloud
 # import mglearn
 # from sklearn.decomposition import LatentDirichletAllocation
 
-# from importlib import reload
-# reload(preprocessing)
-
 
 def run_pipeline():
     """run consultation nlp pipeline"""
     config = load_config("src/config.yaml")
     colnames = [f"qu_{number+1}" for number in range(0, 33)]
-    raw_data = pd.read_csv(config["raw_data_path"], encoding="cp1252", names=colnames)
+    raw_data = pd.read_csv(
+        config["raw_data_path"], encoding="cp1252", names=colnames, skiprows=1
+    )
     raw_series = raw_data["qu_11"]
     # TODO add clean_data parent function
     lower_series = raw_series.str.lower()
@@ -57,7 +60,7 @@ def run_pipeline():
         stop_words=stopwords,
     )
     total_features = get_total_feature_count(features)
-
+    retrieve_named_entities(spelling_fixed)
     print(features, rejoined_words, total_features, impact_of_spell_correction)
 
 

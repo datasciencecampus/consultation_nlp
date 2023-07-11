@@ -1,4 +1,4 @@
-raw_data_path: "data/raw/20230710_consultation_ingest.csv"
+raw_data_path: "data/raw/20230711_consultation_ingest.csv"
 buisness_terminology: #words to update spelling with associated weight
   dpm: 1
   admin: 1
@@ -6,6 +6,8 @@ buisness_terminology: #words to update spelling with associated weight
 additional_stopwords: #words to filter
   - "census"
   - "data"
+  - "personal"
+  - "use"
 lemmatize: True #select False to use Stemmer
 feature_count:
   ngram_range: !!python/tuple [1,2] #tuple range of defaults to unigram (1,1)

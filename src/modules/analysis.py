@@ -1,3 +1,4 @@
+import spacy
 from numpy.typing import ArrayLike
 from pandas import DataFrame, Series
 from sklearn.feature_extraction.text import CountVectorizer
@@ -79,3 +80,20 @@ def get_total_feature_count(features: DataFrame) -> DataFrame:
     for column in features.columns:
         total_feature_count[column] = [features[column].sum()]
     return total_feature_count
+
+
+def retrieve_named_entities(series: Series) -> list[list[str]]:
+    """retrieve any named entities from the series
+    Parameters
+    ----------
+    series:Series
+        A series of text strings to analyse for named entities
+    Returns
+    -------
+    list[list[str]]
+        a list of lists containing strings for each named entitity"""
+    nlp = spacy.load("en_core_web_sm")
+    entities = []
+    for doc in nlp.pipe(series):
+        entities.append([str(ent) for ent in doc.ents])
+    return entities
