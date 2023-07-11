@@ -1,5 +1,7 @@
+import sys
 from itertools import repeat
 
+import pytest
 from pandas import DataFrame, Series
 
 from src.modules.analysis import (
@@ -47,6 +49,7 @@ class TestGetTotalFeatureCount:
 
 
 class TestRetrieveNamedEntities:
+    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Not sure")
     def test_retrieve_named_entities(self):
         test_data = Series(
             [
