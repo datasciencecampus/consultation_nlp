@@ -1,6 +1,8 @@
 import spacy
 from numpy.typing import ArrayLike
 from pandas import DataFrame, Series
+from scipy.sparse._csr import csr_matrix
+from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 
 
@@ -61,7 +63,7 @@ def extract_feature_count(
     word_count_df = DataFrame(
         fitted_vector.toarray(), columns=vectorizer.get_feature_names_out()
     )
-    return word_count_df
+    return fitted_vector, word_count_df
 
 
 def get_total_feature_count(features: DataFrame) -> DataFrame:
@@ -97,3 +99,29 @@ def retrieve_named_entities(series: Series) -> list:
     for doc in nlp.pipe(series):
         entities.append([str(ent) for ent in doc.ents])
     return entities
+
+
+def latent_dirichlet_allocation(
+    n_components: int, max_iter: int, fitted_vector: csr_matrix
+):
+    """fit latent direchlet allocation model on fitted vector
+    Parameters
+    ----------
+    n_components:int
+        number of components to include in model
+    max_iter: int
+        maximum number of passes over the training data
+    fitted_vector:csr_matrix
+        fitted vector from CountVectorizer
+    Returns
+    -------
+    fitted lda model
+    document_topics
+    """
+    lda = LatentDirichletAllocation(
+        n_components=10, learning_method="batch", max_iter=25, random_state=179
+    )
+
+    document_topics = lda.fit_transform(fitted_vector)
+
+    return lda, document_topics
