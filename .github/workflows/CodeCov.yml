@@ -25,7 +25,6 @@ jobs:
         pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         python -m nltk.downloader punkt stopwords
-        pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
         pip install coverage
         pip install coverage[toml]
         coverage run -m pytest
