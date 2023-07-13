@@ -1,5 +1,6 @@
 from itertools import repeat
 import pytest
+import sys
 from pandas import DataFrame, Series
 from scipy.sparse._csr import csr_matrix
 from sklearn.decomposition import LatentDirichletAllocation
