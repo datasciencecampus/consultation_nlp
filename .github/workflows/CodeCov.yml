@@ -20,13 +20,20 @@ jobs:
         python-version: 3.9
         cache: 'pip' # caching pip dependencies
         
-    - name: Generate Report
+    - name: Install packages
       run: |
         pip install --upgrade pip
-        pip install -r requirements.txt
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
+        python -m nltk.downloader punkt stopwords
         pip install coverage
         pip install coverage[toml]
+        
+    - name: Run Unit Tests
+      run: | 
         coverage run -m pytest
+        
+        
         
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v3

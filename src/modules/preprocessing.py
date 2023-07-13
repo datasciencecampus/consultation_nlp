@@ -1,6 +1,7 @@
 import os
 import re
 import string
+import sys
 
 import nltk
 import numpy as np
@@ -8,8 +9,7 @@ import textblob as tb
 import yaml
 from nltk.corpus import stopwords as sw
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-from pandas.core.series import Series
-from rapidfuzz.fuzz import ratio
+from pandas import Series
 
 
 def load_config(filepath: str) -> dict:
@@ -30,7 +30,7 @@ def load_config(filepath: str) -> dict:
         raise TypeError("filepath must be a string")
 
     with open(filepath, "r") as file:
-        config = yaml.safe_load(file)
+        config = yaml.load(file, Loader=yaml.Loader)
     return config
 
 
@@ -69,7 +69,24 @@ def _replace_blanks(series: Series) -> Series:
     return blanks_replaced
 
 
-def correct_spelling(string: str, additional_words: list = []) -> str:
+def spellcorrect_series(series: Series, additional_words: dict = {}) -> Series:
+    """fix spelling across series using the norvig spell-correct method
+    Parameters
+    ----------
+    series: Series
+        the series of text strings you want to pass your spell checker on
+    additional_words:dict
+        a dictionary of words and weights for each word
+    Returns
+    -------
+    Series
+        a series with words spelling corrected"""
+    tb.en.spelling = _update_spelling_words(additional_words)
+    corrected_series = series.apply(lambda str: _correct_spelling(str))
+    return corrected_series
+
+
+def _correct_spelling(string: str) -> str:
     """correct spelling using norvig spell-correct method
     (it has around 70% accuracy)
     Parameters
@@ -80,46 +97,35 @@ def correct_spelling(string: str, additional_words: list = []) -> str:
     -------
     str
         string with the spelling fixed"""
-    _update_spelling_words(additional_words)
     spelling_fixed = str(tb.TextBlob(string).correct())
     return spelling_fixed
 
 
-def _update_spelling_words(additional_words: list) -> None:
+def _update_spelling_words(additional_words: dict) -> None:
     """update word in the textblob library with commonly used business word
     Parameters
     ----------
-    additional_words:list
-        words to add to the textblob dictionary
+    additional_words:dict
+        words to add to the textblob dictionary, with associated weights.
+        higher weights give greater precedence to the weighted word.
     Returns
     -------
-    None
+    dict
+        a dictionary of words and updated weights
     """
-    for word in additional_words:
-        tb.en.spelling.update({word: 1})
-        tb.en.spelling
-    return None
+    for word, weight in additional_words.items():
+        tb.en.spelling.update({word: weight})
+    return tb.en.spelling
 
 
-def fuzzy_compare_ratio(base: Series, comparison: Series) -> Series:
-    """compare the base series to the comparison series to get
-    a similarity ratio between strings in the same column
-    Parameters
-    ----------
-    base: Series
-        the base series for comparison
-    comparison: Series
-        the series you want to compare against
-    Returns
-    -------
-    Series
-        a series of ratios (type:float) with scores closer to 100
-        indicating complete match"""
-    fuzzy_ratio = Series(map(ratio, base, comparison))
-    return fuzzy_ratio
+def remove_punctuation(series: Series) -> Series:
+    """Remove punctuation from series of strings"""
+    _initialise_nltk_component("tokenizers/punkt", "punkt")
+    punct_removed = series.apply(_remove_punctuation_string)
+    return punct_removed
 
 
-def remove_punctuation(text: str) -> str:
+def _remove_punctuation_string(text: str) -> str:
     """Remove punctuation from string
 
     Parameters
@@ -134,6 +140,21 @@ def remove_punctuation(text: str) -> str:
     """
     new_text = re.sub(string=text, pattern="[{}]".format(string.punctuation), repl="")
     return new_text
+
+
+def shorten_tokens(word_tokens: list, lemmatize: bool = True) -> list:
+    """Shorten tokens to root words
+    Parameters
+    ----------
+    word_tokens:list
+        list of word tokens to shorten
+    lemmatize: bool, default = True
+        whether to use lemmatizer or revert back to False (stemmer)"""
+    if lemmatize:
+        short_tokens = word_tokens.apply(lemmatizer)
+    else:
+        short_tokens = word_tokens.apply(stemmer)
+    return short_tokens
 
 
 def stemmer(tokens: list) -> list:
@@ -168,9 +189,63 @@ def lemmatizer(tokens: list) -> list:
     lemmatized_tokens
         list of simplified word groupings
     """
+    _initialise_nltk_component("corpora/wordnet.zip", "wordnet")
     lemmatizer = WordNetLemmatizer()
     lemmatized_tokens = [lemmatizer.lemmatize(token) for token in tokens]
     return lemmatized_tokens
+
+
+def _initialise_nltk_component(extension: str, download_object: str):
+    """spliter function to determine which initialisation path to run
+    Parameters
+    ----------
+    extension: str
+        the filepath extension leading to where the model is saved
+    download_object: str
+        the object to download from nltk
+    Returns
+    -------
+    None
+    """
+    if sys.platform.startswith("linux"):
+        _initialise_nltk_linux(download_object)
+    else:
+        _initialise_nltk_windows(extension, download_object)
+
+
+def _initialise_nltk_linux(download_object: str) -> None:
+    """initialise nltk component for linux  environment (for github actions)
+    Parameters
+    ----------
+    download_object: str
+        nltk object to download
+    Returns
+    -------
+    None
+    """
+    nltk.download(download_object)
+    nltk.data.path.append("../home/runner/nltk_data")
+    return None
+
+
+def _initialise_nltk_windows(extension: str, download_object: str):
+    """initialise nltk component for a windows environment
+    Parameters
+    ----------
+    extension: str
+        the filepath extension leading to where the model is saved
+    download_object: str
+        the object to download from nltk
+    Returns
+    -------
+    None
+    """
+    username = os.getenv("username")
+    path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
+    if not os.path.exists(path):
+        nltk.download(download_object)
+        nltk.data.path.append("../local_packages/nltk_data")
+    return None
 
 
 def remove_nltk_stopwords(tokens: list, additional_stopwords: list = []) -> list:
@@ -187,27 +262,27 @@ def remove_nltk_stopwords(tokens: list, additional_stopwords: list = []) -> list
     list
         token list without stopwords
     """
-    stopwords = _initialise_nltk_stopwords()
-    updated_stopwords = _update_nltk_stopwords(stopwords, additional_stopwords)
-    without_stopwords = [item for item in tokens if item not in updated_stopwords]
+    stopwords = initialise_update_stopwords(additional_stopwords)
+    without_stopwords = [item for item in tokens if item not in stopwords]
     return without_stopwords
 
 
-def _initialise_nltk_stopwords() -> list:
-    """fetch nltk stopwords from corpora
-
+def initialise_update_stopwords(additional_stopwords: list = None) -> list:
+    """initialise and update stopwords, ise this for efficient retrieval of
+    stopwords, rather than calling both functions.
+    Parameters
+    ----------
+    additional_stopwords:list
+        new words to add to the words to remove list
     Returns
     -------
     list
-        list of nltk stopwords
+        a list of words to remove from corpus
     """
-    username = os.getenv("username")
-    path = "c:/Users/" + username + "/AppData/Roaming/nltk_data/corpora/stopwords"
-    if not os.path.exists(path):
-        nltk.download("stopwords")
-    nltk.data.path.append("../local_packages/nltk_data")
+    _initialise_nltk_component("corpora/stopwords", "stopwords")
     stopwords = sw.words("english")
-    return stopwords
+    updated_stopwords = _update_nltk_stopwords(stopwords, additional_stopwords)
+    return updated_stopwords
 
 
 def _update_nltk_stopwords(stopwords: list, additional_stopwords: list):
