@@ -1,3 +1,5 @@
+import typing
+
 import spacy
 from numpy.typing import ArrayLike
 from pandas import DataFrame, Series
@@ -14,7 +16,7 @@ def extract_feature_count(
     lowercase: bool = True,
     min_df=1,
     max_df=1.0,
-):
+) -> typing.Tuple[CountVectorizer, DataFrame]:
     """create a text feature count dataframe from series
     Paramaters
     ----------
@@ -63,7 +65,7 @@ def extract_feature_count(
     word_count_df = DataFrame(
         fitted_vector.toarray(), columns=vectorizer.get_feature_names_out()
     )
-    return fitted_vector, word_count_df
+    return (fitted_vector, word_count_df)
 
 
 def get_total_feature_count(features: DataFrame) -> DataFrame:
@@ -103,7 +105,7 @@ def retrieve_named_entities(series: Series) -> list:
 
 def latent_dirichlet_allocation(
     n_components: int, max_iter: int, fitted_vector: csr_matrix
-):
+) -> LatentDirichletAllocation:
     """fit latent direchlet allocation model on fitted vector
     Parameters
     ----------
@@ -115,13 +117,15 @@ def latent_dirichlet_allocation(
         fitted vector from CountVectorizer
     Returns
     -------
-    fitted lda model
-    document_topics
+    LatentDirichletAllocation
+        fitted lda model
     """
     lda = LatentDirichletAllocation(
-        n_components=10, learning_method="batch", max_iter=25, random_state=179
+        n_components=n_components,
+        learning_method="batch",
+        max_iter=max_iter,
+        random_state=179,
     )
 
-    document_topics = lda.fit_transform(fitted_vector)
-
-    return lda, document_topics
+    lda.fit(fitted_vector)
+    return lda
