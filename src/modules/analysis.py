@@ -104,12 +104,12 @@ def retrieve_named_entities(series: Series) -> list:
 
 
 def latent_dirichlet_allocation(
-    n_components: int, max_iter: int, fitted_vector: csr_matrix
+    n_topics: int, max_iter: int, fitted_vector: csr_matrix
 ) -> LatentDirichletAllocation:
     """fit latent direchlet allocation model on fitted vector
     Parameters
     ----------
-    n_components:int
+    n_topics:int
         number of components to include in model
     max_iter: int
         maximum number of passes over the training data
@@ -121,7 +121,7 @@ def latent_dirichlet_allocation(
         fitted lda model
     """
     lda = LatentDirichletAllocation(
-        n_components=n_components,
+        n_components=n_topics,
         learning_method="batch",
         max_iter=max_iter,
         random_state=179,

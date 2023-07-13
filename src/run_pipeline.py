@@ -58,16 +58,18 @@ def run_pipeline():
     )
     total_features = get_total_feature_count(features)
     entities = retrieve_named_entities(without_blank_rows)
-    lda, document_topics = latent_dirichlet_allocation(
-        n_components=10, max_iter=50, fitted_vector=fitted_vector
+    lda = latent_dirichlet_allocation(
+        n_topics=config["lda"]["n_topics"],
+        max_iter=config["lda"]["max_iter"],
+        fitted_vector=fitted_vector,
     )
     plot_top_words(
         model=lda,
         feature_names=list(features.columns),
-        n_topics=10,
-        title="Top words by topic",
-        n_top_words=10,
-        topic_labels=None,
+        n_topics=config["lda"]["n_topics"],
+        title=config["lda"]["title"],
+        n_top_words=config["lda"]["n_top_words"],
+        topic_labels=config["lda"]["topic_labels"],
     )
 
     print(impact_of_spell_correction, total_features, entities)
