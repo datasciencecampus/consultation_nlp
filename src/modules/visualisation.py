@@ -121,7 +121,7 @@ def _get_n_columns_and_n_rows(n_topics: int) -> int:
     Parameters
     ----------
     n_topics: int
-        number of topics
+        number of topics (must be integer greater than 0)
     Returns
     -------
     int
