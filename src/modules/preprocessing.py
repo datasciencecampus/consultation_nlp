@@ -34,6 +34,39 @@ def load_config(filepath: str) -> dict:
     return config
 
 
+def prepend_str_to_list_objects(list_object: list, string: str = "qu_"):
+    """add word to the front of list of question numbers
+    Parameters
+    ----------
+    list_object: list
+        list of objects to add word to
+    string: str
+        string to prepend to each object
+    Returns
+    -------
+    list
+        a list with the string prepended to each object
+    """
+    question_list = list(map(lambda object: string + str(object), list_object))
+    return question_list
+
+
+def get_response_length(series: Series) -> Series:
+    """get length of each row in series
+    Parameters
+    ----------
+    series: Series
+        series you want to get the response lengths for
+    Returns
+    -------
+    Series
+        a series of lengths
+    """
+    series.fillna("", inplace=True)
+    response_length = series.apply(len)
+    return response_length
+
+
 def remove_blank_rows(series: Series) -> Series:
     """Remove blank rows from series
 

@@ -1,9 +1,10 @@
-raw_data_path: "data/raw/20230711_consultation_ingest.csv" #str
+raw_data_path: "data/raw/20230717_consultation_ingest.csv" #str
 buisness_terminology: # dictionary of words to update spelling with associated weight
   dpm: 1  #int
   admin: 1 #int
   timeliness: 1 #int
   year: 450 #int
+  dft: 1 # int
 additional_stopwords: #list of words to filter; must be type str
   - "census" #str
   - "data" #str
@@ -11,7 +12,7 @@ additional_stopwords: #list of words to filter; must be type str
   - "use" #str
 lemmatize: True #bool; select False to use Stemmer
 feature_count: #dict
-  ngram_range: !!python/tuple [1,2] #tuple range of defaults to unigram (1,1)
+  ngram_range: !!python/tuple [1,1] #tuple range of defaults to unigram (1,1)
   min_df: 2 #float (proportion) or int (count)
   max_df: 0.95 #float (proportion) or int (count)
   max_features: null #null converts to None, or int value

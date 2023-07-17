@@ -3,6 +3,7 @@ from datetime import datetime as dt
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from pandas import DataFrame
 from sklearn.decomposition import LatentDirichletAllocation
 from wordcloud import WordCloud
 
@@ -24,6 +25,29 @@ def create_wordcloud(text: str, name: str = "wordcloud") -> None:
     plt.axis("off")
     save_figure(name, figure)
     return None
+
+
+def plot_common_words(total_features: DataFrame, n: int = 20, name: str = "top_words"):
+    """plot top 'n' number of words
+    Parameters
+    ----------
+    total_features:DataFrame
+        Dataframe containing words and their frequency count
+    n:int, default = 20
+        number of top words to include
+    name:str, default = "top_words"
+        name of the chart to output
+    Returns
+    -------
+    None (message to console on location of chart)
+    """
+    if n is None:
+        n = 20
+    top_n_features = total_features.sort_values(["count"], ascending=[False]).head(n)
+    top_words = plt.figure(figsize=(10, 10))
+    plt.barh(top_n_features["index"], top_n_features["count"])
+    plt.title(f"{name} - Common words")
+    save_figure(name, top_words)
 
 
 def save_figure(name: str, fig: Figure) -> None:
@@ -52,6 +76,7 @@ def plot_top_words(
     title: str,
     n_top_words: int = 10,
     topic_labels: list = None,
+    filename: str = "top_words_by_topic",
 ) -> None:
     """Plot topics by their most frequent words
     Parameters
@@ -91,7 +116,7 @@ def plot_top_words(
         for i in "top right left".split():
             ax.spines[i].set_visible(False)
         fig.suptitle(title, fontsize=40)
-    save_figure("lda_top_words", fig)
+    save_figure(filename, fig)
     return None
 
 

@@ -1,6 +1,7 @@
-from itertools import repeat
-import pytest
 import sys
+from itertools import repeat
+
+import pytest
 from pandas import DataFrame, Series
 from scipy.sparse._csr import csr_matrix
 from sklearn.decomposition import LatentDirichletAllocation
@@ -8,7 +9,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 from src.modules.analysis import (
     extract_feature_count,
-    get_total_feature_count,
     latent_dirichlet_allocation,
     retrieve_named_entities,
 )
@@ -45,21 +45,10 @@ class TestExtractFeatureCount:
         ), "Does not return a csr_matrix object in position 0"
 
 
-class TestGetTotalFeatureCount:
-    def test_get_total_feature_count(self):
-        df = DataFrame(
-            [[1, 1, 1, 1, 0], [0, 1, 1, 1, 1]],
-            columns=["elf", "is", "my", "name", "santa"],
-        )
-        expected = DataFrame(
-            [[1, 2, 2, 2, 1]], columns=["elf", "is", "my", "name", "santa"]
-        )
-        actual = get_total_feature_count(df)
-        assert all(expected == actual), "Does not correctly sum total features"
-
-
 class TestRetrieveNamedEntities:
-    @pytest.mark.skipif(sys.platform.startswith("linux"), reason="Unknown error during CI")
+    @pytest.mark.skipif(
+        sys.platform.startswith("linux"), reason="Unknown error during CI"
+    )
     def test_retrieve_named_entities(self):
         test_data = Series(
             [

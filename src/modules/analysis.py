@@ -68,24 +68,6 @@ def extract_feature_count(
     return (fitted_vector, word_count_df)
 
 
-def get_total_feature_count(features: DataFrame) -> DataFrame:
-    """sum across features to get total number of times word was used
-    Parameters
-    ----------
-    features: DataFrame
-        A dataframe of the features with each row corrosponding to a deconstructed
-        string
-    Returns
-    -------
-    DataFrame
-        A dataframe of the total number of times each word is used across all
-        strings"""
-    total_feature_count = DataFrame()
-    for column in features.columns:
-        total_feature_count[column] = [features[column].sum()]
-    return total_feature_count
-
-
 def retrieve_named_entities(series: Series) -> list:
     """retrieve any named entities from the series
     Parameters
