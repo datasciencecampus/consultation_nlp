@@ -109,7 +109,7 @@ def _generate_topic_labels(n_topics: int, topic_labels: list = None) -> list:
         list of topic labels
     """
     if topic_labels is None:
-        topic_labels = [f"Topic_{n}" for n in range(1, n_topics)]
+        topic_labels = [f"Topic_{n}" for n in range(1, n_topics + 1)]
     else:
         if len(topic_labels) != n_topics:
             raise AttributeError("len(topic_labels) does not equal n_topics")
@@ -121,7 +121,7 @@ def _get_n_columns_and_n_rows(n_topics: int) -> int:
     Parameters
     ----------
     n_topics: int
-        number of topics
+        number of topics (must be integer greater than 0)
     Returns
     -------
     int

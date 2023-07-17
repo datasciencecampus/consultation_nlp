@@ -17,7 +17,7 @@ feature_count: #dict
   max_features: null #null converts to None, or int value
   lowercase: True #whether to convert all words to lowercase
 lda: #dict
-  n_topics: 5 #int
+  n_topics: 5 #int greater than 0
   n_top_words: 10 #int
   max_iter: 25 #int
   title: "Topic Summary" #str
