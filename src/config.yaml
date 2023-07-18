@@ -6,19 +6,16 @@ buisness_terminology: # dictionary of words to update spelling with associated w
   year: 450 #int
   dft: 1 # int
 additional_stopwords: #list of words to filter; must be type str
-  - "census" #str
-  - "data" #str
-  - "personal" #str
-  - "use" #str
+  - 'he'
 lemmatize: True #bool; select False to use Stemmer
 feature_count: #dict
-  ngram_range: !!python/tuple [1,1] #tuple range of defaults to unigram (1,1)
+  ngram_range: !!python/tuple [1,3] #tuple range of defaults to unigram (1,1)
   min_df: 2 #float (proportion) or int (count)
-  max_df: 0.95 #float (proportion) or int (count)
+  max_df: 0.9 #float (proportion) or int (count)
   max_features: null #null converts to None, or int value
   lowercase: True #whether to convert all words to lowercase
 lda: #dict
-  n_topics: 5 #int greater than 0
+  n_topics: 3 #int greater than 0
   n_top_words: 10 #int
   max_iter: 25 #int
   title: "Topic Summary" #str

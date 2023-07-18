@@ -3,6 +3,7 @@
 This log contains a list of assumptions and caveats used in this analysis.
 
 ## NLTK stopwords
+
 Stopwords are commonly used words which on their own don't really mean much. The NLTK package has a pre-defined list of stopwords which we have implemented in this pipeline, so we can focus our analysis on the key words that we think are likely to reveal more insights.
 
 For transparency, here is a list of the NLTK stopwords:
@@ -13,3 +14,11 @@ For transparency, here is a list of the NLTK stopwords:
 'not', 'on', 'shouldn', 'ours', 'be', 'me', 'we', 'here', 'o', 'was', 'herself', 'after', 'aren', 'the', 'ma', 'which', "you've", 'then', 'against', 'same', 'being', 'below', 'in', 'wasn', 'over', 'don', 'them', 'both', 'some', 'such', 'during', 'why', 'its', 're', 'won', 'where', 'of', 'under', 'she']`
 
 We have also added a few additional words which can be found in the config (e.g. 'census', 'data')
+
+## Spell Checker
+
+The spell checker function identifies any words that it thinks are mis-spelled with a flag which then uses a Levenshtien Distance algorithm to find permutations within an edit distance of 2 from the original word. Each word within this list has a frequency value associated with it, the algorithm then finds the most likely word and replaces the mis-spelled word with it. A more thorough explaination of this method can be found in [Peter Norvig's Blog](https://norvig.com/spell-correct.html).
+
+One of the potential challenges of using this method is that it can auto-correct words or phrases which are unknown to the pre-defined dictionary (e.g. DfE) or fail to adapt to words which are more or less likely in a specific context e.g. amin data -> main data, when it most probably is refering to admin data.
+
+There are ways for us to override the spelling corrector. We have added a section called business_terminology in the config.yaml file, which allows us to add new words, or override existing word frequencies, so that some words are more likely to come out on top. But on average, the spell checker works correctly 70% of the time, according to Norvigs article.

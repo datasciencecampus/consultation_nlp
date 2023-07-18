@@ -22,9 +22,10 @@ def compare_spelling(
     spelling_table = DataFrame(
         {"fuzzy_ratio": fuzzy_ratio, "before_spelling": before, "after_spelling": after}
     )
+    spelling_table = spelling_table[spelling_table["fuzzy_ratio"] != 100.000000]
     datestamp = dt.strftime(dt.now(), "%Y%m%d")
     full_filename = f"data/outputs/{datestamp}_{filename}_spelling_table.csv"
-    spelling_table.to_csv(full_filename, index=False)
+    spelling_table.to_csv(full_filename)
     print(f"spelling table saved to {full_filename}")
 
 
