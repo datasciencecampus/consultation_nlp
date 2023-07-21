@@ -99,12 +99,12 @@ def _replace_blanks(series: Series) -> Series:
     return blanks_replaced
 
 
-def shorten_tokens(word_tokens: list, lemmatize: bool = True) -> list:
+def shorten_tokens(word_tokens: Series, lemmatize: bool = True) -> list:
     """Shorten tokens to root words
     Parameters
     ----------
-    word_tokens:list
-        list of word tokens to shorten
+    word_tokens:Series
+        Series of listed word tokens
     lemmatize: bool, default = True
         whether to use lemmatizer or revert back to False (stemmer)"""
     if lemmatize:
@@ -165,43 +165,14 @@ def _initialise_nltk_component(extension: str, download_object: str):
     None
     """
     if sys.platform.startswith("linux"):
-        _initialise_nltk_linux(download_object)
-    else:
-        _initialise_nltk_windows(extension, download_object)
-
-
-def _initialise_nltk_linux(download_object: str) -> None:
-    """initialise nltk component for linux  environment (for github actions)
-    Parameters
-    ----------
-    download_object: str
-        nltk object to download
-    Returns
-    -------
-    None
-    """
-    nltk.download(download_object)
-    nltk.data.path.append("../home/runner/nltk_data")
-    return None
-
-
-def _initialise_nltk_windows(extension: str, download_object: str):
-    """initialise nltk component for a windows environment
-    Parameters
-    ----------
-    extension: str
-        the filepath extension leading to where the model is saved
-    download_object: str
-        the object to download from nltk
-    Returns
-    -------
-    None
-    """
-    username = os.getenv("username")
-    path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
-    if not os.path.exists(path):
         nltk.download(download_object)
-        nltk.data.path.append("../local_packages/nltk_data")
+        nltk.data.path.append("../home/runner/nltk_data")
+    else:
+        username = os.getenv("username")
+        path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
+        if not os.path.exists(path):
+            nltk.download(download_object)
+            nltk.data.path.append("../local_packages/nltk_data")
     return None
 
 
