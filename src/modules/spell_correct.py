@@ -93,7 +93,7 @@ def _replace_words_string(string_x: str, word_replacements: dict) -> str:
     return string_x
 
 
-def _update_spell_dictionary(additional_words: dict) -> SpellChecker:
+def update_spell_dictionary(additional_words: dict) -> SpellChecker:
     """update spell checker dictionary with additional words
     Parameters
     ----------

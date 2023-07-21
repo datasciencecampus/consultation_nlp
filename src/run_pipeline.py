@@ -19,7 +19,7 @@ def run_pipeline():
     questions = prep.prepend_str_to_list_objects(
         question_config["questions_to_interpret"], "qu_"
     )
-    spell_checker = spell._update_spell_dictionary(config["spelling_words"])
+    spell_checker = spell.update_spell_dictionary(config["spelling_words"])
     for question in questions:
         raw_series = raw_data[question]
         response_char_lengths = prep.get_response_length(raw_series)
