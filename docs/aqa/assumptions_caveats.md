@@ -21,4 +21,4 @@ The spell checker function identifies any words that it thinks are mis-spelled w
 
 One of the potential challenges of using this method is that it can auto-correct words or phrases which are unknown to the pre-defined dictionary (e.g. DfE) or fail to adapt to words which are more or less likely in a specific context e.g. amin data -> main data, when it most probably is refering to admin data.
 
-There are ways for us to override the spelling corrector. We have added a section called business_terminology in the config.yaml file, which allows us to add new words, or override existing word frequencies, so that some words are more likely to come out on top. But on average, the spell checker works correctly 70% of the time, according to Norvigs article.
+To override the preset word dictionary, we have added json file in the src directory called `spelling_words.json`. This file contains key value pairs, where the word is the key, and the value corrosponds to the word frequency. Higher frequency words are more likely to get selected if there are similar distance matches. According to Norvigs article, this method achieves a 70% correction rate. 
