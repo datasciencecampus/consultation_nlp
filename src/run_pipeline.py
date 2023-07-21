@@ -18,17 +18,18 @@ def run_pipeline():
     questions = prep.prepend_str_to_list_objects(
         question_config["questions_to_interpret"], "qu_"
     )
+    spell_checker = spell._update_spell_dictionary(config["buisness_terminology"])
     for question in questions:
         raw_series = raw_data[question]
         response_char_lengths = prep.get_response_length(raw_series)
         average_response_char_length = response_char_lengths.mean()
         without_blank_rows = prep.remove_blank_rows(raw_series)
-        cleaned_series = without_blank_rows.apply(clean.clean_string)
-        spelling_fixed, modifications = spell.auto_correct_series(
-            cleaned_series, config["buisness_terminology"]
-        )
+        punct_removed = without_blank_rows.apply(spell.remove_punctuation)
+        cleaned_series = punct_removed.apply(clean.clean_string)
+        word_replacements = spell.find_word_replacements(cleaned_series, spell_checker)
+        spelling_fixed = spell.replace_words(cleaned_series, word_replacements)
         quality.compare_spelling(
-            without_blank_rows, spelling_fixed, modifications, filename=question
+            without_blank_rows, spelling_fixed, word_replacements, filename=question
         )
         lower_series = spelling_fixed.str.lower()
         no_punctuation_series = lower_series.apply(spell.remove_punctuation)
@@ -77,7 +78,6 @@ def run_pipeline():
             average_response_char_length,
             total_features,
             entities,
-            modifications,
         )
 
 
