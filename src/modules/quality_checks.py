@@ -28,7 +28,7 @@ def compare_spelling(
     comparison_dataframe["fuzzy_ratio"] = _fuzzy_compare_ratio(
         comparison_dataframe["before"], comparison_dataframe["after"]
     )
-    comparison_dataframe["spelling_replacements"] = list(modifications.values())
+    comparison_dataframe["spelling_replacements"] = modifications
     datestamp = dt.strftime(dt.now(), "%Y%m%d")
     full_filename = f"data/outputs/{datestamp}_{filename}_spelling_table.csv"
     comparison_dataframe.to_csv(full_filename, index=False)
