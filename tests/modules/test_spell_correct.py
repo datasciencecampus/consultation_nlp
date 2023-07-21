@@ -63,7 +63,7 @@ class TestTokenizeWords:
 class TestRemovePunctuation:
     def test_remove_punctuation(self):
         string_x = "!hello, ,world!"
-        expected = " hello   world "
+        expected = "hello   world"
         actual = spell.remove_punctuation(string_x)
         assert actual == expected, "did not correctly remove punctuation"
 
