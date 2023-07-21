@@ -12,13 +12,14 @@ from src.modules import visualisation as vis
 def run_pipeline():
     """run consultation nlp pipeline"""
     config = prep.load_config("src/config.yaml")
+    config["spelling_words"] = prep.load_json("src/spelling_words.json")
     question_config = prep.load_config("src/question_config.yaml")
     colnames = [f"qu_{number+1}" for number in range(0, 54)]
     raw_data = pd.read_csv(config["raw_data_path"], names=colnames, skiprows=1)
     questions = prep.prepend_str_to_list_objects(
         question_config["questions_to_interpret"], "qu_"
     )
-    spell_checker = spell._update_spell_dictionary(config["buisness_terminology"])
+    spell_checker = spell._update_spell_dictionary(config["spelling_words"])
     for question in questions:
         raw_series = raw_data[question]
         response_char_lengths = prep.get_response_length(raw_series)

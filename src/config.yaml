@@ -1,23 +1,4 @@
 raw_data_path: "data/raw/20230717_consultation_ingest.csv" #str
-buisness_terminology: # dictionary of words to update spelling with associated weight
-  dpm: 1  #int
-  admin: 1 #int
-  timeliness: 1 #int
-  year: 450 #int
-  dft: 1 # int
-  msoa: 1
-  lsoa: 1
-  ons: 1
-  nhs: 1
-  non-technical: 1
-  policy-focused: 1
-  censuses: 1
-  non-response: 1
-  oa: 1
-  lancashire: 1
-  sub-district: 1
-  dfe: 1
-  ons's: 1
 additional_stopwords: #list of words to filter; must be type str
   - 'he'
 lemmatize: True #bool; select False to use Stemmer
