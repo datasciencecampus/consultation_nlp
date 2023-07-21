@@ -1,11 +1,8 @@
 import os
-import re
-import string
 import sys
 
 import nltk
 import numpy as np
-import textblob as tb
 import yaml
 from nltk.corpus import stopwords as sw
 from nltk.stem import PorterStemmer, WordNetLemmatizer
@@ -34,7 +31,7 @@ def load_config(filepath: str) -> dict:
     return config
 
 
-def prepend_str_to_list_objects(list_object: list, string: str = "qu_"):
+def prepend_str_to_list_objects(list_object: list, string_x: str = "qu_"):
     """add word to the front of list of question numbers
     Parameters
     ----------
@@ -47,7 +44,7 @@ def prepend_str_to_list_objects(list_object: list, string: str = "qu_"):
     list
         a list with the string prepended to each object
     """
-    question_list = list(map(lambda object: string + str(object), list_object))
+    question_list = list(map(lambda object: string_x + str(object), list_object))
     return question_list
 
 
@@ -100,79 +97,6 @@ def _replace_blanks(series: Series) -> Series:
     """
     blanks_replaced = series.replace([r"^\s*?$"], np.NaN, regex=True)
     return blanks_replaced
-
-
-def spellcorrect_series(series: Series, additional_words: dict = {}) -> Series:
-    """fix spelling across series using the norvig spell-correct method
-    Parameters
-    ----------
-    series: Series
-        the series of text strings you want to pass your spell checker on
-    additional_words:dict
-        a dictionary of words and weights for each word
-    Returns
-    -------
-    Series
-        a series with words spelling corrected"""
-    tb.en.spelling = _update_spelling_words(additional_words)
-    corrected_series = series.apply(lambda str: _correct_spelling(str))
-    return corrected_series
-
-
-def _correct_spelling(string: str) -> str:
-    """correct spelling using norvig spell-correct method
-    (it has around 70% accuracy)
-    Parameters
-    ----------
-    string:str
-        string you want to fix the spelling in
-    Returns
-    -------
-    str
-        string with the spelling fixed"""
-    spelling_fixed = str(tb.TextBlob(string).correct())
-    return spelling_fixed
-
-
-def _update_spelling_words(additional_words: dict) -> None:
-    """update word in the textblob library with commonly used business word
-    Parameters
-    ----------
-    additional_words:dict
-        words to add to the textblob dictionary, with associated weights.
-        higher weights give greater precedence to the weighted word.
-    Returns
-    -------
-    dict
-        a dictionary of words and updated weights
-    """
-    for word, weight in additional_words.items():
-        tb.en.spelling.update({word: weight})
-    return tb.en.spelling
-
-
-def remove_punctuation(series: Series) -> Series:
-    """Remove punctuation from series of strings"""
-    _initialise_nltk_component("tokenizers/punkt", "punkt")
-    punct_removed = series.apply(_remove_punctuation_string)
-    return punct_removed
-
-
-def _remove_punctuation_string(text: str) -> str:
-    """Remove punctuation from string
-
-    Parameters
-    ----------
-    text : str
-        string which you want to remove the punctuation from
-
-    Returns
-    -------
-    str
-        text string without punctuation
-    """
-    new_text = re.sub(string=text, pattern="[{}]".format(string.punctuation), repl="")
-    return new_text
 
 
 def shorten_tokens(word_tokens: list, lemmatize: bool = True) -> list:

@@ -1,24 +1,18 @@
 import numpy as np
 import pytest
-import textblob as tb
 from nltk.corpus import stopwords as sw
 from pandas import Series
 
-from src.modules.preprocessing import (
-    _correct_spelling,
+from src.modules.preprocessing import (  # _correct_spelling,; _remove_punctuation_string,; _update_spelling_words,; remove_punctuation,; spellcorrect_series, # noqa:E501
     _initialise_nltk_component,
-    _remove_punctuation_string,
     _replace_blanks,
     _update_nltk_stopwords,
-    _update_spelling_words,
     initialise_update_stopwords,
     lemmatizer,
     load_config,
     rejoin_tokens,
     remove_blank_rows,
     remove_nltk_stopwords,
-    remove_punctuation,
-    spellcorrect_series,
     stemmer,
 )
 
@@ -82,51 +76,51 @@ class TestReplaceBlanks:
         ), "output is not <class 'pandas.core.series.Series'>"
 
 
-class TestSpellCorrectSeries:
-    def test_spell_correct_series(self):
-        series = Series(["I live in a housr", "I own a housr"])
-        actual = spellcorrect_series(series)
-        expected = Series(["I live in a house", "I own a house"])
-        assert all(actual == expected), "Not fixed spelling across series"
+# class TestSpellCorrectSeries:
+#     def test_spell_correct_series(self):
+#         series = Series(["I live in a housr", "I own a housr"])
+#         actual = spellcorrect_series(series)
+#         expected = Series(["I live in a house", "I own a house"])
+#         assert all(actual == expected), "Not fixed spelling across series"
 
-    def test_update_spelling_on_series(self):
-        series = Series(["I live in a housr", "I own a housr"])
-        additional_words = {"housr": 1}
-        actual = spellcorrect_series(series, additional_words)
-        expected = Series(["I live in a housr", "I own a housr"])
-        assert all(actual == expected), "Updated spelling doesn't work across series"
-
-
-class TestCorrectSpelling:
-    def test_spelling_fixed(self):
-        house_str = "I live flar away"
-        corrected = _correct_spelling(house_str)
-        assert corrected == "I live far away", "spelling not fixed correctly"
+#     def test_update_spelling_on_series(self):
+#         series = Series(["I live in a housr", "I own a housr"])
+#         additional_words = {"housr": 1}
+#         actual = spellcorrect_series(series, additional_words)
+#         expected = Series(["I live in a housr", "I own a housr"])
+#         assert all(actual == expected), "Updated spelling doesn't work across series" # noqa:E501
 
 
-class TestUpdateSpellingWords:
-    def test_update_word_list(self):
-        additional_words = {"monsterp": 1}
-        tb.en.spelling = _update_spelling_words(additional_words)
-        assert (
-            "monsterp" in tb.en.spelling.keys()
-        ), "spelling word list not updated correctly"
+# class TestCorrectSpelling:
+#     def test_spelling_fixed(self):
+#         house_str = "I live flar away"
+#         corrected = _correct_spelling(house_str)
+#         assert corrected == "I live far away", "spelling not fixed correctly"
 
 
-class TestRemovePunctuation:
-    def test_remove_punctuation(self):
-        series = Series(["this is!", "my series?"])
-        actual = remove_punctuation(series)
-        expected = Series(["this is", "my series"])
-        assert all(actual == expected), "Remove punctuation not working on series"
+# class TestUpdateSpellingWords:
+#     def test_update_word_list(self):
+#         additional_words = {"monsterp": 1}
+#         tb.en.spelling = _update_spelling_words(additional_words)
+#         assert (
+#             "monsterp" in tb.en.spelling.keys()
+#         ), "spelling word list not updated correctly"
 
 
-class TestRemovePunctuationstring:
-    def test_remove_punctuation(self):
-        test_string = "my #$%&()*+,-./:;<=>?@[]^_`{|}~?name"
-        actual = _remove_punctuation_string(test_string)
-        expected = "my name"
-        assert actual == expected, "punctuation not removed correctly"
+# class TestRemovePunctuation:
+#     def test_remove_punctuation(self):
+#         series = Series(["this is!", "my series?"])
+#         actual = remove_punctuation(series)
+#         expected = Series(["this is", "my series"])
+#         assert all(actual == expected), "Remove punctuation not working on series"
+
+
+# class TestRemovePunctuationstring:
+#     def test_remove_punctuation(self):
+#         test_string = "my #$%&()*+,-./:;<=>?@[]^_`{|}~?name"
+#         actual = _remove_punctuation_string(test_string)
+#         expected = "my name"
+#         assert actual == expected, "punctuation not removed correctly"
 
 
 class TestStemmer:

@@ -1,65 +1,48 @@
 import pandas as pd
 from nltk.tokenize import word_tokenize
 
-from src.modules.analysis import (
-    extract_feature_count,
-    latent_dirichlet_allocation,
-    retrieve_named_entities,
-)
-from src.modules.preprocessing import (
-    get_response_length,
-    initialise_update_stopwords,
-    load_config,
-    prepend_str_to_list_objects,
-    rejoin_tokens,
-    remove_blank_rows,
-    remove_nltk_stopwords,
-    remove_punctuation,
-    shorten_tokens,
-    spellcorrect_series,
-)
-from src.modules.quality_checks import compare_spelling
-from src.modules.visualisation import (
-    create_wordcloud,
-    plot_common_words,
-    plot_top_words,
-)
+from src.modules import analysis
+from src.modules import clean_string as clean
+from src.modules import preprocessing as prep
+from src.modules import quality_checks as quality
+from src.modules import spell_correct as spell
+from src.modules import visualisation as vis
 
 
 def run_pipeline():
     """run consultation nlp pipeline"""
-    config = load_config("src/config.yaml")
-    question_config = load_config("src/question_config.yaml")
+    config = prep.load_config("src/config.yaml")
+    question_config = prep.load_config("src/question_config.yaml")
     colnames = [f"qu_{number+1}" for number in range(0, 54)]
-    raw_data = pd.read_csv(
-        config["raw_data_path"], encoding="cp1252", names=colnames, skiprows=1
-    )
-    questions = prepend_str_to_list_objects(
+    raw_data = pd.read_csv(config["raw_data_path"], names=colnames, skiprows=1)
+    questions = prep.prepend_str_to_list_objects(
         question_config["questions_to_interpret"], "qu_"
     )
     for question in questions:
         raw_series = raw_data[question]
-        # TODO add clean_data parent function
-        response_char_lengths = get_response_length(raw_series)
+        response_char_lengths = prep.get_response_length(raw_series)
         average_response_char_length = response_char_lengths.mean()
-        without_blank_rows = remove_blank_rows(raw_series)
-        spelling_fixed = spellcorrect_series(
-            without_blank_rows, config["buisness_terminology"]
+        without_blank_rows = prep.remove_blank_rows(raw_series)
+        cleaned_series = without_blank_rows.apply(clean.clean_string)
+        spelling_fixed, modifications = spell.auto_correct_series(
+            cleaned_series, config["buisness_terminology"]
         )
-        compare_spelling(without_blank_rows, spelling_fixed, filename=question)
+        quality.compare_spelling(
+            without_blank_rows, spelling_fixed, modifications, filename=question
+        )
         lower_series = spelling_fixed.str.lower()
-        no_punctuation_series = remove_punctuation(lower_series)
+        no_punctuation_series = lower_series.apply(spell.remove_punctuation)
         word_tokens = no_punctuation_series.apply(word_tokenize)
-        short_tokens = shorten_tokens(word_tokens, config["lemmatize"])
+        short_tokens = prep.shorten_tokens(word_tokens, config["lemmatize"])
         without_stopwords = short_tokens.apply(
-            lambda x: remove_nltk_stopwords(x, config["additional_stopwords"])
+            lambda x: prep.remove_nltk_stopwords(x, config["additional_stopwords"])
         )
-        rejoined_words = without_stopwords.apply(rejoin_tokens)
-        all_text_combined = " ".join(rejoined_words)
-        create_wordcloud(all_text_combined, f"{question}_wordcloud")
-        stopwords = initialise_update_stopwords(config["additional_stopwords"])
-        fitted_vector, features = extract_feature_count(
-            series=spelling_fixed,
+        rejoined_words = without_stopwords.apply(prep.rejoin_tokens)
+        all_text_combined = " ".join(rejoined_words)  # rejoin_tokens
+        vis.create_wordcloud(all_text_combined, f"{question}_wordcloud")
+        stopwords = prep.initialise_update_stopwords(config["additional_stopwords"])
+        fitted_vector, features = analysis.extract_feature_count(
+            series=without_blank_rows,
             ngram_range=config["feature_count"]["ngram_range"],
             min_df=config["feature_count"]["min_df"],
             max_df=config["feature_count"]["max_df"],
@@ -68,18 +51,18 @@ def run_pipeline():
             stop_words=stopwords,
         )
         total_features = features.sum(axis=0).reset_index(name="count")
-        plot_common_words(
+        vis.plot_common_words(
             total_features,
             n=config["feature_count"]["max_features"],
             name=f"{question}_most_common_words",
         )
-        entities = retrieve_named_entities(without_blank_rows)
-        lda = latent_dirichlet_allocation(
+        entities = analysis.retrieve_named_entities(cleaned_series)
+        lda = analysis.latent_dirichlet_allocation(
             n_topics=config["lda"]["n_topics"],
             max_iter=config["lda"]["max_iter"],
             fitted_vector=fitted_vector,
         )
-        plot_top_words(
+        vis.plot_top_words(
             model=lda,
             feature_names=list(features.columns),
             n_topics=config["lda"]["n_topics"],
@@ -94,6 +77,7 @@ def run_pipeline():
             average_response_char_length,
             total_features,
             entities,
+            modifications,
         )
 
 
