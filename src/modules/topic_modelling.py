@@ -212,7 +212,7 @@ def _plot_top_words(
     -------
     None (message to console on location of file)
     """
-    topic_labels = utils._generate_topic_labels(n_topics, topic_labels)
+    topic_labels = _generate_topic_labels(n_topics, topic_labels)
     labelled_components = dict(zip(topic_labels, model.components_))
     rows, columns = _get_n_columns_and_n_rows(n_topics)
     fig, axes = plt.subplots(
