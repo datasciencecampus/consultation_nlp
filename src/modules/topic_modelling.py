@@ -79,9 +79,7 @@ def topic_model(
     return None
 
 
-def _fit_vectorizer_to_df(
-    fitted: csr_matrix, vectorizer: CountVectorizer | TfidfVectorizer
-) -> DataFrame:
+def _fit_vectorizer_to_df(fitted: csr_matrix, vectorizer) -> DataFrame:
     """Transform fitted vectorizer to a readable dataframe
 
     Parameters
