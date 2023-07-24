@@ -14,7 +14,7 @@ def run_pipeline():
     """run consultation nlp pipeline"""
     config = prep.load_config("src/config.yaml")
     config["spelling_words"] = prep.load_json("src/spelling_words.json")
-    config["question_settings"] = prep.load_config("src/question_config.yaml")
+    config["question_settings"] = prep.load_config("src/question_model_config.yaml")
     colnames = [f"qu_{number+1}" for number in range(0, 54)]
     raw_data = pd.read_csv(config["raw_data_path"], names=colnames, skiprows=1)
     questions = list(config["question_settings"].keys())
