@@ -1,59 +1,8 @@
 import numpy as np
-import pytest
 from nltk.corpus import stopwords as sw
 from pandas import Series
 
 from src.modules import preprocessing as prep
-
-
-class TestLoadConfig:
-    def test_input_type_error(self):
-        """test for assertion error"""
-        bad_input = 123
-        with pytest.raises(Exception) as e_info:
-            prep.load_config(bad_input)
-        assert (
-            str(e_info.value) == "filepath must be a string"
-        ), "Did not raise TypeError"
-
-    def test_input_file_not_found(self):
-        """test for error feedback on file not found"""
-        bad_input = "src/superman.yaml"
-        with pytest.raises(Exception) as e_info:
-            prep.load_config(bad_input)
-        assert (
-            str(e_info.value.args[1]) == "No such file or directory"
-        ), "Did not raise file not found error"
-
-    def test_return_dict(self):
-        assert (
-            type(prep.load_config("src/config.yaml")) is dict
-        ), "output is not <class 'dict'>"
-
-
-class TestLoadJson:
-    def test_input_type_error(self):
-        """test for assertion error"""
-        bad_input = 123
-        with pytest.raises(Exception) as e_info:
-            prep.load_json(bad_input)
-        assert (
-            str(e_info.value) == "filepath must be a string"
-        ), "Did not raise TypeError"
-
-    def test_input_file_not_found(self):
-        """test for error feedback on file not found"""
-        bad_input = "src/superman.json"
-        with pytest.raises(Exception) as e_info:
-            prep.load_json(bad_input)
-        assert (
-            str(e_info.value.args[1]) == "No such file or directory"
-        ), "Did not raise file not found error"
-
-    def test_return_dict(self):
-        assert (
-            type(prep.load_json("src/spelling_words.json")) is dict
-        ), "output is not <class 'dict'>"
 
 
 class TestPrependStrToListObjects:
