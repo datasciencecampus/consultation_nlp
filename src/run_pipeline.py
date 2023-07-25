@@ -36,14 +36,18 @@ def run_pipeline():
     lower_series = spelling_fixed.str.lower()
     no_punctuation_series = lower_series.apply(spell.remove_punctuation)
     word_tokens = no_punctuation_series.apply(word_tokenize)
-    short_tokens = prep.shorten_tokens(word_tokens, config["lemmatize"])
+    short_tokens = prep.shorten_tokens(word_tokens, config["general"]["lemmatize"])
     without_stopwords = short_tokens.apply(
-        lambda x: prep.remove_nltk_stopwords(x, config["additional_stopwords"])
+        lambda x: prep.remove_nltk_stopwords(
+            x, config["general"]["additional_stopwords"]
+        )
     )
     rejoined_words = without_stopwords.apply(prep.rejoin_tokens)
     all_text_combined = " ".join(rejoined_words)  # rejoin_tokens
     wc.create_wordcloud(all_text_combined, f"{question}_wordcloud")
-    stopwords = prep.initialise_update_stopwords(config["additional_stopwords"])
+    stopwords = prep.initialise_update_stopwords(
+        config["general"]["additional_stopwords"]
+    )
     model_data = without_blank_rows
 
     [

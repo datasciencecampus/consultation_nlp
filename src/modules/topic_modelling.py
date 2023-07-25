@@ -37,7 +37,7 @@ def topic_model(
     Returns
     -------
     None (prints messages to console on location of outputs)"""
-    settings = config["question_settings"][question]
+    settings = config["models"][question]
     vectorizer_class = {"lda": CountVectorizer, "nmf": TfidfVectorizer}
     model_class = {"lda": LatentDirichletAllocation, "nmf": NMF}
     vectorizer = vectorizer_class[model](
