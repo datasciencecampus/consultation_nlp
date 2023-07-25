@@ -1,53 +1,11 @@
-import json
 import os
 import sys
 
 import nltk
 import numpy as np
-import yaml
 from nltk.corpus import stopwords as sw
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from pandas import Series
-
-
-def load_config(filepath: str) -> dict:
-    """Loads configuration settings from given filepath to
-    yaml file
-
-    Parameters
-    ----------
-    filepath : str
-        The relative filepath to the yaml file
-
-    Returns
-    -------
-    dict
-        the configuration settings with key-value pairs
-    """
-    if type(filepath) is not str:
-        raise TypeError("filepath must be a string")
-
-    with open(filepath, "r") as file:
-        config = yaml.load(file, Loader=yaml.Loader)
-    return config
-
-
-def load_json(filepath: str) -> dict:
-    """Loads json file as dictionary
-    Parameters
-    ----------
-    filepath:str
-        the filepath to where the json file is stored
-    Returns
-    -------
-    dict
-        the json file in dict format
-    """
-    if type(filepath) is not str:
-        raise TypeError("filepath must be a string")
-    with open(filepath, "r") as file:
-        json_data = json.load(file)
-    return json_data
 
 
 def prepend_str_to_list_objects(list_object: list, string_x: str = "qu_"):

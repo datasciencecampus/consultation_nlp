@@ -8,17 +8,18 @@ from src.modules import quality_checks as quality
 from src.modules import spell_correct as spell
 from src.modules import topic_modelling as topic
 from src.modules import word_cloud as wc
+from src.modules.config import Config
 
 
 def run_pipeline():
     """run consultation nlp pipeline"""
-    config = prep.load_config("src/config.yaml")
-    config["spelling_words"] = prep.load_json("src/spelling_words.json")
-    config["question_settings"] = prep.load_config("src/question_model_config.yaml")
+    config = Config().settings
     colnames = [f"qu_{number+1}" for number in range(0, 54)]
-    raw_data = pd.read_csv(config["raw_data_path"], names=colnames, skiprows=1)
-    questions = list(config["question_settings"].keys())
-    spell_checker = spell.update_spell_dictionary(config["spelling_words"])
+    raw_data = pd.read_csv(
+        config["general"]["raw_data_path"], names=colnames, skiprows=1
+    )
+    questions = list(config["models"].keys())
+    spell_checker = spell.update_spell_dictionary(config["spelling"])
     # TODO add forloop for question in questions:
     question = "qu_12"
     raw_series = raw_data[question]
