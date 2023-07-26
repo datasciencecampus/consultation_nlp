@@ -1,11 +1,36 @@
 import os
 import sys
+import unittest
 from datetime import datetime as dt
 
 import pytest
 from matplotlib import pyplot as plt
 
 from src.modules import utils
+
+
+class TestTrimEnds:
+    def test_trim_ends(self):
+        test_string = " hello world "
+        expected = "hello world"
+        actual = utils._trim_ends(test_string)
+        assert expected == actual, "Did not correctly trim ends"
+
+
+class TestGetDatestamp(unittest.TestCase):
+    def test_get_datestamp_is_string(self):
+        date_stamp = utils._get_datestamp()
+        assert type(date_stamp) is str, "datestamp is not a string"
+
+    def test_get_datestamp_is_date(self):
+        datestamp = utils._get_datestamp()
+        try:
+            dt.strptime(datestamp, "%Y%m%d")
+        except ValueError:
+            raised = True
+            self.assertFalse(
+                raised, "Exception raised when trying to convert date string to date"
+            )
 
 
 class TestSaveFigure:
