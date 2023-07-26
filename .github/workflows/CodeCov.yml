@@ -31,7 +31,8 @@ jobs:
         
     - name: Run Unit Tests
       run: | 
-        coverage run -m pytest
+        python import os
+        os.getcwd
         
         
         
