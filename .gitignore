@@ -755,6 +755,11 @@ UpgradeLog*.htm
 ServiceFabricBackup/
 *.rptproj.bak
 
+# Quatro files
+report_files/*
+*.html
+*.qmd
+
 # SQL Server files
 *.mdf
 *.ldf
