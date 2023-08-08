@@ -1,0 +1,16 @@
+# See docs/user_guide/README.md for instructions on how to set
+# these configuration settings.
+qu_12:
+  max_features: null #null converts to None, or int value
+  ngram_range: !!python/tuple [1,2]
+  min_df: 2 #float (proportion) or int (count)
+  max_df: 0.9 #float (proportion) or int (count)
+  n_topics: 3 #int greater than 0
+  n_top_words: 10 #int
+  max_iter:
+    lda: 25 #int
+    nmf: 1000 #int
+  lowercase: true #bool
+  topic_labels: #if not null, must be same number as n_topics in each
+    lda: null
+    nmf: null

@@ -1,0 +1,4 @@
+raw_data_path: "data/raw/20230717_consultation_ingest.csv" #str
+additional_stopwords: #list of words to filter; must be type str
+  - 'he'
+lemmatize: True #bool; select False to use Stemmer

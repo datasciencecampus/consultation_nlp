@@ -1,37 +1,44 @@
 import os
-import re
-import string
 import sys
 
 import nltk
 import numpy as np
-import textblob as tb
-import yaml
 from nltk.corpus import stopwords as sw
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from pandas import Series
 
 
-def load_config(filepath: str) -> dict:
-    """Loads configuration settings from given filepath to
-    yaml file
-
+def prepend_str_to_list_objects(list_object: list, string_x: str = "qu_"):
+    """add word to the front of list of question numbers
     Parameters
     ----------
-    filepath : str
-        The relative filepath to the yaml file
-
+    list_object: list
+        list of objects to add word to
+    string: str
+        string to prepend to each object
     Returns
     -------
-    dict
-        the configuration settings with key-value pairs
+    list
+        a list with the string prepended to each object
     """
-    if type(filepath) is not str:
-        raise TypeError("filepath must be a string")
+    question_list = list(map(lambda object: string_x + str(object), list_object))
+    return question_list
 
-    with open(filepath, "r") as file:
-        config = yaml.load(file, Loader=yaml.Loader)
-    return config
+
+def get_response_length(series: Series) -> Series:
+    """get length of each row in series
+    Parameters
+    ----------
+    series: Series
+        series you want to get the response lengths for
+    Returns
+    -------
+    Series
+        a series of lengths
+    """
+    series.fillna("", inplace=True)
+    response_length = series.apply(len)
+    return response_length
 
 
 def remove_blank_rows(series: Series) -> Series:
@@ -69,85 +76,12 @@ def _replace_blanks(series: Series) -> Series:
     return blanks_replaced
 
 
-def spellcorrect_series(series: Series, additional_words: dict = {}) -> Series:
-    """fix spelling across series using the norvig spell-correct method
-    Parameters
-    ----------
-    series: Series
-        the series of text strings you want to pass your spell checker on
-    additional_words:dict
-        a dictionary of words and weights for each word
-    Returns
-    -------
-    Series
-        a series with words spelling corrected"""
-    tb.en.spelling = _update_spelling_words(additional_words)
-    corrected_series = series.apply(lambda str: _correct_spelling(str))
-    return corrected_series
-
-
-def _correct_spelling(string: str) -> str:
-    """correct spelling using norvig spell-correct method
-    (it has around 70% accuracy)
-    Parameters
-    ----------
-    string:str
-        string you want to fix the spelling in
-    Returns
-    -------
-    str
-        string with the spelling fixed"""
-    spelling_fixed = str(tb.TextBlob(string).correct())
-    return spelling_fixed
-
-
-def _update_spelling_words(additional_words: dict) -> None:
-    """update word in the textblob library with commonly used business word
-    Parameters
-    ----------
-    additional_words:dict
-        words to add to the textblob dictionary, with associated weights.
-        higher weights give greater precedence to the weighted word.
-    Returns
-    -------
-    dict
-        a dictionary of words and updated weights
-    """
-    for word, weight in additional_words.items():
-        tb.en.spelling.update({word: weight})
-    return tb.en.spelling
-
-
-def remove_punctuation(series: Series) -> Series:
-    """Remove punctuation from series of strings"""
-    _initialise_nltk_component("tokenizers/punkt", "punkt")
-    punct_removed = series.apply(_remove_punctuation_string)
-    return punct_removed
-
-
-def _remove_punctuation_string(text: str) -> str:
-    """Remove punctuation from string
-
-    Parameters
-    ----------
-    text : str
-        string which you want to remove the punctuation from
-
-    Returns
-    -------
-    str
-        text string without punctuation
-    """
-    new_text = re.sub(string=text, pattern="[{}]".format(string.punctuation), repl="")
-    return new_text
-
-
-def shorten_tokens(word_tokens: list, lemmatize: bool = True) -> list:
+def shorten_tokens(word_tokens: Series, lemmatize: bool = True) -> list:
     """Shorten tokens to root words
     Parameters
     ----------
-    word_tokens:list
-        list of word tokens to shorten
+    word_tokens:Series
+        Series of listed word tokens
     lemmatize: bool, default = True
         whether to use lemmatizer or revert back to False (stemmer)"""
     if lemmatize:
@@ -208,43 +142,14 @@ def _initialise_nltk_component(extension: str, download_object: str):
     None
     """
     if sys.platform.startswith("linux"):
-        _initialise_nltk_linux(download_object)
-    else:
-        _initialise_nltk_windows(extension, download_object)
-
-
-def _initialise_nltk_linux(download_object: str) -> None:
-    """initialise nltk component for linux  environment (for github actions)
-    Parameters
-    ----------
-    download_object: str
-        nltk object to download
-    Returns
-    -------
-    None
-    """
-    nltk.download(download_object)
-    nltk.data.path.append("../home/runner/nltk_data")
-    return None
-
-
-def _initialise_nltk_windows(extension: str, download_object: str):
-    """initialise nltk component for a windows environment
-    Parameters
-    ----------
-    extension: str
-        the filepath extension leading to where the model is saved
-    download_object: str
-        the object to download from nltk
-    Returns
-    -------
-    None
-    """
-    username = os.getenv("username")
-    path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
-    if not os.path.exists(path):
         nltk.download(download_object)
-        nltk.data.path.append("../local_packages/nltk_data")
+        nltk.data.path.append("../home/runner/nltk_data")
+    else:
+        username = os.getenv("username")
+        path = "C:/Users/" + username + "/AppData/Roaming/nltk_data/" + extension
+        if not os.path.exists(path):
+            nltk.download(download_object)
+            nltk.data.path.append("../local_packages/nltk_data")
     return None
 
 

@@ -1,78 +1,65 @@
 import pandas as pd
 from nltk.tokenize import word_tokenize
 
-from src.modules.analysis import (
-    extract_feature_count,
-    get_total_feature_count,
-    latent_dirichlet_allocation,
-    retrieve_named_entities,
-)
-from src.modules.preprocessing import (
-    initialise_update_stopwords,
-    load_config,
-    rejoin_tokens,
-    remove_blank_rows,
-    remove_nltk_stopwords,
-    remove_punctuation,
-    shorten_tokens,
-    spellcorrect_series,
-)
-from src.modules.quality_checks import fuzzy_compare_ratio  # print_row_by_row,
-from src.modules.visualisation import create_wordcloud, plot_top_words
+from src.modules import clean_string as clean
+from src.modules import named_entity_recognition as ner
+from src.modules import preprocessing as prep
+from src.modules import quality_checks as quality
+from src.modules import spell_correct as spell
+from src.modules import topic_modelling as topic
+from src.modules import word_cloud as wc
+from src.modules.config import Config
 
 
 def run_pipeline():
     """run consultation nlp pipeline"""
-    config = load_config("src/config.yaml")
-    colnames = [f"qu_{number+1}" for number in range(0, 33)]
+    config = Config().settings
+    colnames = [f"qu_{number+1}" for number in range(0, 54)]
     raw_data = pd.read_csv(
-        config["raw_data_path"], encoding="cp1252", names=colnames, skiprows=1
+        config["general"]["raw_data_path"], names=colnames, skiprows=1
     )
-    raw_series = raw_data["qu_11"]
-    # TODO add clean_data parent function
-    without_blank_rows = remove_blank_rows(raw_series)
-    spelling_fixed = spellcorrect_series(
-        without_blank_rows, config["buisness_terminology"]
+    questions = list(config["models"].keys())
+    spell_checker = spell.update_spell_dictionary(config["spelling"])
+    # TODO add forloop for question in questions:
+    question = "qu_12"
+    raw_series = raw_data[question]
+    response_char_lengths = prep.get_response_length(raw_series)
+    average_response_char_length = response_char_lengths.mean()
+    without_blank_rows = prep.remove_blank_rows(raw_series)
+    punct_removed = without_blank_rows.apply(spell.remove_punctuation)
+    cleaned_series = punct_removed.apply(clean.clean_string)
+    word_replacements = spell.find_word_replacements(cleaned_series, spell_checker)
+    spelling_fixed = spell.replace_words(cleaned_series, word_replacements)
+    quality.compare_spelling(
+        without_blank_rows, spelling_fixed, word_replacements, filename=question
     )
-    impact_of_spell_correction = fuzzy_compare_ratio(without_blank_rows, spelling_fixed)
     lower_series = spelling_fixed.str.lower()
-    #      print_row_by_row(without_blank_rows,spelling_fixed)
-    no_punctuation_series = remove_punctuation(lower_series)
+    no_punctuation_series = lower_series.apply(spell.remove_punctuation)
     word_tokens = no_punctuation_series.apply(word_tokenize)
-    short_tokens = shorten_tokens(word_tokens, config["lemmatize"])
+    short_tokens = prep.shorten_tokens(word_tokens, config["general"]["lemmatize"])
     without_stopwords = short_tokens.apply(
-        lambda x: remove_nltk_stopwords(x, config["additional_stopwords"])
+        lambda x: prep.remove_nltk_stopwords(
+            x, config["general"]["additional_stopwords"]
+        )
     )
-    rejoined_words = without_stopwords.apply(rejoin_tokens)
-    all_text_combined = " ".join(rejoined_words)
-    create_wordcloud(all_text_combined)
-    stopwords = initialise_update_stopwords(config["additional_stopwords"])
-    fitted_vector, features = extract_feature_count(
-        series=spelling_fixed,
-        ngram_range=config["feature_count"]["ngram_range"],
-        min_df=config["feature_count"]["min_df"],
-        max_df=config["feature_count"]["max_df"],
-        max_features=config["feature_count"]["max_features"],
-        lowercase=config["feature_count"]["lowercase"],
-        stop_words=stopwords,
+    rejoined_words = without_stopwords.apply(prep.rejoin_tokens)
+    all_text_combined = " ".join(rejoined_words)  # rejoin_tokens
+    wc.create_wordcloud(all_text_combined, f"{question}_wordcloud")
+    stopwords = prep.initialise_update_stopwords(
+        config["general"]["additional_stopwords"]
     )
-    total_features = get_total_feature_count(features)
-    entities = retrieve_named_entities(without_blank_rows)
-    lda = latent_dirichlet_allocation(
-        n_topics=config["lda"]["n_topics"],
-        max_iter=config["lda"]["max_iter"],
-        fitted_vector=fitted_vector,
-    )
-    plot_top_words(
-        model=lda,
-        feature_names=list(features.columns),
-        n_topics=config["lda"]["n_topics"],
-        title=config["lda"]["title"],
-        n_top_words=config["lda"]["n_top_words"],
-        topic_labels=config["lda"]["topic_labels"],
-    )
+    model_data = without_blank_rows
 
-    print(impact_of_spell_correction, total_features, entities)
+    [
+        topic.topic_model(
+            model, question, without_blank_rows, model_data, stopwords, config
+        )
+        for model in ["nmf", "lda"]
+    ]
+
+    entities = ner.retrieve_named_entities(model_data)
+
+    print(response_char_lengths, average_response_char_length, entities, questions)
 
 
 # code to execute script from terminal
