@@ -21,11 +21,13 @@ def run_pipeline():
     questions = list(config["models"].keys())
     spell_checker = spell.update_spell_dictionary(config["spelling"])
     # TODO add forloop for question in questions:
-    question = "qu_12"
+    question = "qu_15"
     raw_series = raw_data[question]
     response_char_lengths = prep.get_response_length(raw_series)
     average_response_char_length = response_char_lengths.mean()
-    without_blank_rows = prep.remove_blank_rows(raw_series)
+    no_ans_removed = prep.remove_no_answer(raw_series)
+    without_blank_rows = prep.remove_blank_rows(no_ans_removed)
+
     punct_removed = without_blank_rows.apply(spell.remove_punctuation)
     cleaned_series = punct_removed.apply(clean.clean_string)
     word_replacements = spell.find_word_replacements(cleaned_series, spell_checker)

@@ -1,0 +1,6 @@
+[data-testid="stSidebar"] {
+                background-image: url("https://datasciencecampus.ons.gov.uk/wp-content/uploads/sites/10/2017/03/data-science-campus-logo-new.svg");
+                background-size: 200px;
+                background-repeat: no-repeat;
+                background-position: 10px 20px;
+            }

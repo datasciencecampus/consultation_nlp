@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 import nltk
@@ -39,6 +40,20 @@ def get_response_length(series: Series) -> Series:
     series.fillna("", inplace=True)
     response_length = series.apply(len)
     return response_length
+
+
+def remove_no_answer(series: Series):
+    """Remove responses with 'Not Answered' in the text field
+
+    Parameters
+    ----------
+    raw_series:Series
+        Series to remove 'Not Answered' from
+
+    Returns
+    -------
+    A data frame with blank returns when not answered"""
+    return series.apply(lambda i: re.sub("Not Answered", "", i))
 
 
 def remove_blank_rows(series: Series) -> Series:
