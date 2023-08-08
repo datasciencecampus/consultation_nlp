@@ -286,7 +286,7 @@ def add_label_formatting(replacement_dict: dict, topic_sample: DataFrame) -> lis
     formatted_text = []
     for sample in topic_sample["responses"]:
         for key, value in replacement_dict.items():
-            sample = re.sub(rf"\s\b{key}\b", f" {value}", sample)
+            sample = re.sub(rf"\b{key}\b", f"{value}", sample)
         formatted_text.append([sample])
     return formatted_text
 
@@ -313,7 +313,11 @@ def get_single_topic_color(topic_names: list, topic_name: str) -> str:
 
 
 def single_topic_formatting(
-    top_n_words: Series, topic_sample: DataFrame, topic_name: str, topic_color: str
+    top_n_words: Series,
+    topic_sample: DataFrame,
+    topic_name: str,
+    topic_color: str,
+    stopwords: list,
 ) -> list:
     """Creates a streamlit annotate formatting setup for single topic
 
@@ -327,6 +331,8 @@ def single_topic_formatting(
         name of the topic
     topic_color: str
         hex code for the topic
+    stopwords:list
+        list of inconsequential words removed from corpus during cleaning
 
     Returns
     -------
@@ -334,11 +340,11 @@ def single_topic_formatting(
         a formatted list of strings and tuples
     """
     pattern_behind = r"[\s,](?=\['[\w\s]+',\s'\w+\s\d+',\s'#[a-zA-Z0-9]{6}'\])"
-    pattern_ahead = r"(?<='#[a-zA-Z0-9]{6}'])[\s]"
+    pattern_ahead = r"(?<='#[a-zA-Z0-9]{6}'])[\s,]"
     pattern_combined = "|".join([pattern_behind, pattern_ahead])
-    top_n_words_x = top_n_words
-    replacements = [[i, topic_name, topic_color] for i in list(top_n_words)]
-    replacement_dict = dict(zip(top_n_words_x, replacements))
+    word_stopword_combos = create_word_stopword_combos(top_n_words, stopwords)
+    replacements = [[i, topic_name, topic_color] for i in list(word_stopword_combos)]
+    replacement_dict = dict(zip(word_stopword_combos, replacements))
     initial_formatted = add_label_formatting(replacement_dict, topic_sample)
     for idx in range(len(initial_formatted)):
         split_string = re.split(pattern_combined, initial_formatted[idx][0])
@@ -347,6 +353,22 @@ def single_topic_formatting(
     return initial_formatted
 
 
+# Series.reset_index()
+# test_data = topic_sample["responses"][1]
+
+# reindexed_top_words = top_n_words.reset_index(drop = True).reset_index()
+# reindexed_top_words["n_words"] = reindexed_top_words.word.apply(n_words)
+# sorted_top_words = reindexed_top_words.sort_values(
+#     ["n_words", "index"], ascending = False).word
+
+
+# for phrase in sorted_top_words:
+#     test_data = re.sub(phrase, snake_case(phrase), test_data)
+
+
+# def n_words(phrase):
+#     words = phrase.split()
+#     return len(words)
 def multitopic_formatting(
     dominant_topics: DataFrame, topic_sample: DataFrame, topic_names: list
 ) -> list:
