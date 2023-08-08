@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/datasciencecampus/consultation_nlp/branch/main/graph/badge.svg?token=bvdkp2cCG8)](https://codecov.io/gh/datasciencecampus/consultation_nlp)
 [![Twitter](https://img.shields.io/twitter/url?label=Follow%20%40DataSciCampus&style=social&url=https%3A%2F%2Ftwitter.com%2FDataSciCampus)](https://twitter.com/DataSciCampus)
 
-Python code for preliminary natural language processing analysis for 2023 population transformation 
+Python code for preliminary natural language processing analysis for 2023 population transformation
 consultation
 
 ```{warning}
@@ -21,7 +21,7 @@ requirements](requirements.txt).
 It's suggested that you install this pack and it's requirements within a virtual environment.
 
 ### Cloning the repo
-To clone the repo, open command promt and navigate to the directory you want to save the repo to and call: 
+To clone the repo, open command promt and navigate to the directory you want to save the repo to and call:
 `git clone https://github.com/datasciencecampus/consultation_nlp.git`
 
 ### Pre-commit actions
@@ -70,10 +70,21 @@ python src/run_pipeline.py
 
 Alternatively, most Python IDE's allow you to run the code directly from the IDE using a `run` button.
 
+
+### Running the streamlit app
+
+1) Ensure all requirements are downloaded from the requirements.txt by openning up the shell terminal (anaconda prompt) and running:
+```shell
+pip install -r requirements.txt
+```
+2) Keep the shell terminal open and navigate to the directory where this code is saved and run:
+```shell
+streamlit run streamlit_app.py
+```
 ## Licence
 
 This codebase is released under the MIT License. This covers both the codebase and any sample code in
-the documentation. The documentation is ©Crown copyright and available under the terms of the 
+the documentation. The documentation is ©Crown copyright and available under the terms of the
 Open Government 3.0 licence.
 
 ## Contributing
