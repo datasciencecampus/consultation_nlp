@@ -71,7 +71,7 @@ python src/run_pipeline.py
 Alternatively, most Python IDE's allow you to run the code directly from the IDE using a `run` button.
 
 
-### Running the streamlit app
+### Running the streamlit app (dashboard)
 
 1) Ensure all requirements are downloaded from the requirements.txt by openning up the shell terminal (anaconda prompt) and running:
 ```shell
