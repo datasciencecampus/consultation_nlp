@@ -321,7 +321,7 @@ with st.spinner("Updating report..."):
     word_stopword_combos = stream.create_word_stopword_combos(top_n_words, stopwords)
     topic_color = stream.get_single_topic_color(topic_names, topic_name)
     formatted_topic_single = stream.single_topic_formatting(
-        word_stopword_combos, topic_sample, topic_name, topic_color
+        top_n_words, topic_sample, topic_name, topic_names, stopwords
     )
     formatted_text = stream.multitopic_formatting(
         dominant_topics, topic_sample, topic_names
