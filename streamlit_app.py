@@ -1,11 +1,12 @@
 import re
 import warnings
+from datetime import datetime as dt
 
 import numpy as np
 import pandas as pd
 import streamlit as st
 from annotated_text import annotated_text
-from sklearn.decomposition import NMF, LatentDirichletAllocation
+from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 from src.modules import clean_string as clean
@@ -22,6 +23,7 @@ issue_link = (
 )
 
 st.set_page_config(
+    page_title="NLP App",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={"Report a bug": issue_link},
@@ -31,160 +33,182 @@ with open("src\modules\style.css") as f:  # noqa w605
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Side bar
-st.sidebar.subheader(":blue[Natural Language Processing - Analysis]")
+st.sidebar.subheader(":blue[Natural Language Processing - Analysis]", divider="rainbow")
 
+uploaded_file = st.sidebar.file_uploader(
+    "Upload your file here:",
+    type=["csv"],
+    accept_multiple_files=False,
+    label_visibility="collapsed",
+)
+if uploaded_file is not None:
+    raw_data = pd.read_csv(uploaded_file, encoding="cp1252")
 
-question_dict = {
-    "Please explain how you currently use our statistics?": "qu_12",
-    "How will our proposals better meet your information needs?": "qu_15",
-    "What new things would these proposals enable you to do?": "qu_17",
-    "What needs would not be met by these new proposals?": "qu_22",
-}
+question = st.sidebar.selectbox("Select question column:", raw_data.columns)
 
-question = st.sidebar.selectbox("Select a question:", list(question_dict.keys()))
-
-st.sidebar.subheader("Topic Modelling")
+st.sidebar.subheader("Vectorization Parameters")
 
 
 vectorizer_selection = st.sidebar.selectbox(
-    "Vectorizer:", ["Count Vectorizer", "TF-IDF Vectorizer"]
+    "Method:", ["Count Vectorizer", "TF-IDF Vectorizer"]
+)
+sb_a1, sb_a2 = st.sidebar.columns([0.6, 0.4])
+min_freq_measure = sb_a1.radio(
+    "Minimum document frequency measure:",
+    ("Absolute", "Relative"),
+    index=0,
+    help="'Absolute' selects the minimum number of documents a term must "
+    + "appear in, whereas 'Relative' selects the minimum percentage of total "
+    + "documents a term must appear in.",
+)
+if min_freq_measure == "Absolute":
+    min_df = sb_a2.number_input("Min frequency:", min_value=1, value=1, step=1)
+else:
+    min_df = sb_a2.slider(
+        "Min frequency (%):",
+        help="Ignore terms that appear in fewer than this percentage"
+        + " of responses (0% means no bottom end filter)",
+        min_value=0,
+        max_value=100,
+        value=0,
+        step=1,
+    )
+
+sb_b1, sb_b2 = st.sidebar.columns([0.6, 0.4])
+
+max_freq_measure = sb_b1.radio(
+    "Maximum document frequency measure:",
+    ("Absolute", "Relative"),
+    index=1,
+    help="'Absolute' selects the maximum number of documents a term must "
+    + "appear in, whereas 'Relative' selects the maximum percentage of total "
+    + "documents a term must appear in.",
+)
+if max_freq_measure == "Absolute":
+    max_df = sb_b2.number_input("Max Frequency:", min_value=1, value=100, step=1)
+else:
+    max_df = sb_b2.slider(
+        "Max frequency (%):",
+        help="Ignore terms that appear in more than this percentage"
+        + " of responses (100% means no top end filter)",
+        min_value=0,
+        max_value=100,
+        value=100,
+        step=1,
+    )
+
+sb_c1, sb_c2, sb_c3 = st.sidebar.columns([0.5, 0.25, 0.25])
+max_features = sb_c1.number_input(
+    "Max features:",
+    min_value=1,
+    max_value=1000000,
+    value=100000,
+    step=1,
+    help="The maximum number of ngram (word combination) features to include",
+)
+ngram_help_text = (
+    "An N-gram is a sequence of N words. An N-gram range of 1-1, will capture "
+    + "one word at a time (uni-grams)' e.g. 'use'; 'admin'; 'data'. A range of "
+    + "1-2 will capture single and double word sequences e.g. 'use'; "
+    + "'admin'; 'data; 'use admin'; 'admin data', which can provide helpful "
+    + "context and more features which can help strengthen weaker datasets"
 )
 
-model_selection = st.sidebar.selectbox(
-    "Model:", ["Latent Dirichlet Allocation", "Non-Negative Matrix Factorization"]
+ngram_start_range = sb_c2.slider(
+    "Ngram start range:", help=ngram_help_text, min_value=1, max_value=5, value=1
 )
-sb_b1, sb_b2, sb_b3 = st.sidebar.columns(3)
 
-n_topics = sb_b1.number_input("Number of topics:", min_value=1, step=1, value=3)
+ngram_end_range = sb_c3.slider(
+    "Ngram end range:", help=ngram_help_text, min_value=1, max_value=5, value=2
+)
 
-n_iter = sb_b2.number_input(
-    "Iterations:",
+
+st.sidebar.subheader("Topic Modelling - Parameters")
+
+(
+    sb_d1,
+    sb_d2,
+    sb_d3,
+    sb_d4,
+) = st.sidebar.columns(4)
+n_topics = sb_d1.number_input("Number of topics:", min_value=1, step=1, value=3)
+
+
+alpha = sb_d2.slider(
+    "Alpha:",
+    help="Alpha represents document-topic density - with a higher alpha, "
+    + "documents are made up of more topics, and with lower alpha, documents "
+    + "contain fewer topics",
+    min_value=0.0,
+    max_value=1.0,
+    value=(1 / n_topics),
+    step=0.01,
+)
+
+beta = sb_d3.slider(
+    "Beta:",
+    help="Beta represents topic-word density - with a high beta, topics are "
+    + "made up of most of the words in the corpus, and with a low beta they "
+    + "consist of few words.",
+    min_value=0.0,
+    max_value=1.0,
+    value=(1 / n_topics),
+    step=0.01,
+)
+
+n_iter = sb_d4.number_input(
+    "Max iterations:",
     min_value=10,
     max_value=10000,
     step=1,
     value=25,
-    help="Number of times the model re-runs to "
-    + "attempt to allow the model outputs to converge",
+    help="The maximum number of times the model re-runs to "
+    + "attempt to allow the model outputs to converge. If it converges before it"
+    + " will stop sooner.",
 )
 
-max_features = sb_b3.number_input(
-    "Max features:", min_value=1, max_value=100000, value=10000, step=1
-)
-
-st.sidebar.write("Word combinations (N-grams)")
-sb_c1, sb_c2 = st.sidebar.columns(2)
-
-ngram_help_text = (
-    "N-gram range sets if features to be used to characterize "
-    + "texts will be: Unigrams or words (n-gram size = 1) Bigrams or terms "
-    + "compounded by two words (n-gram size = 2)"
-)
-
-ngram_start_range = sb_c1.slider(
-    "Start range:", help=ngram_help_text, min_value=1, max_value=10, value=1
-)
-
-ngram_end_range = sb_c2.slider(
-    "End range:", help=ngram_help_text, min_value=1, max_value=10, value=2
-)
-
-st.sidebar.write("Filter by document frequency")
-sb_d1, sb_d2 = st.sidebar.columns(2)
-
-min_df = sb_d1.slider(
-    "Minimum %:",
-    help="Ignore terms that appear in fewer than this percentage"
-    + " of responses (0% means no bottom end filter)",
-    min_value=0,
-    max_value=100,
-    value=0,
-    step=1,
-)
-
-max_df = sb_d2.slider(
-    "Maximum %:",
-    help="Ignore terms that appear in more than this percentage"
-    + " of responses (100% means no top end filter)",
-    min_value=0,
-    max_value=100,
-    value=100,
-    step=1,
-)
-
-model_lookup = {
-    "Latent Dirichlet Allocation": {"class": LatentDirichletAllocation, "short": "lda"},
-    "Non-Negative Matrix Factorization": {"class": NMF, "short": "nmf"},
-}
 
 vectorizer_lookup = {
     "Count Vectorizer": {"class": CountVectorizer, "short": "count"},
     "TF-IDF Vectorizer": {"class": TfidfVectorizer, "short": "tfidf"},
 }
 
-model_short = model_lookup[model_selection]["short"]
-
-models = {
-    question_dict[question]: {
-        "max_features": max_features,
-        "ngram_range": (ngram_start_range, ngram_end_range),
-        "min_df": min_df,
-        "max_df": max_df,
-        "n_topics": n_topics,
-        "n_top_words": 10,
-        "max_iter": {"lda": n_iter, "nmf": n_iter},
-        "lowercase": True,
-        "topic_labels": {
-            "lda": None,
-            "nmf": None,
-            "model_selection": model_lookup[model_selection]["short"],
-            "vectorizer_selection": vectorizer_lookup[vectorizer_selection]["short"],
-        },
-    }
-}
-######################################################################
-# for testing and bug-fixing - unhash below to emulate user inputs
-######################################################################
-# topic_name = "Topic 1"
-# question = "Please explain how you currently use our statistics?"
-# vectorizer_selection = "Count Vectorizer"
-# model_selection = "Non-Negative Matrix Factorization"
-# n_samples = 4
-# models = {question_dict[question]:{
-#     "max_features": 10000,
-#     "ngram_range": (1, 2),
-#     "min_df":0.0,
-#     "max_df":1.0,
-#     "n_topics": 3,
-#     "n_top_words": 10,
-#     "max_iter":{
-#         "lda":25,
-#         "nmf":25
-#     },
-#     "lowercase": True,
-#     "topic_labels":{
-#         "lda":None,
-#         "nmf":None,
-#     "model_selection":model_selection,
-#     "vectorizer_selection": vectorizer_selection
-#     }}}
-#######################################################################
-#  Don't forget to re-hash it after you are finished
-#######################################################################
+# ######################################################################
+# # for testing and bug-fixing - unhash below to emulate user inputs
+# ######################################################################
+# # topic_name = "Topic 1"
+# # question = "Please explain how you currently use our statistics?"
+# # vectorizer_selection = "Count Vectorizer"
+# # model_selection = "Non-Negative Matrix Factorization"
+# # n_samples = 4
+# # models = {question_dict[question]:{
+# #     "max_features": 10000,
+# #     "ngram_range": (1, 2),
+# #     "min_df":0.0,
+# #     "max_df":1.0,
+# #     "n_topics": 3,
+# #     "n_top_words": 10,
+# #     "max_iter":{
+# #         "lda":25,
+# #         "nmf":25
+# #     },
+# #     "lowercase": True,
+# #     "topic_labels":{
+# #         "lda":None,
+# #         "nmf":None,
+# #     "model_selection":model_selection,
+# #     "vectorizer_selection": vectorizer_selection
+# #     }}}
+# #######################################################################
+# #  Don't forget to re-hash it after you are finished
+# #######################################################################
 # Main Body
 st.error("**Official Sensitive:** Do not share without permission.", icon="⚠️")
 with st.spinner("Updating report..."):
-
     # Model Processing
     config = Config().settings
-    config["models"] = models
-    colnames = [f"qu_{number+1}" for number in range(0, 54)]
-    raw_data = pd.read_csv(
-        config["general"]["raw_data_path"], names=colnames, skiprows=1
-    )
-    questions = list(config["models"].keys())
     spell_checker = spell.update_spell_dictionary(config["spelling"])
-    question_short = question_dict[question]
-    raw_series = raw_data[question_short]
+    raw_series = raw_data[question]
     response_char_lengths = prep.get_response_length(raw_series)
     average_response_char_length = response_char_lengths.mean()
     # Cleaning
@@ -197,30 +221,31 @@ with st.spinner("Updating report..."):
     stopwords = prep.initialise_update_stopwords(
         config["general"]["additional_stopwords"]
     )
-    settings = config["models"][question_short]
     # Vectorization
     vect_setup = vectorizer_lookup[vectorizer_selection]["class"](
-        max_features=settings["max_features"],
-        ngram_range=settings["ngram_range"],
-        min_df=settings["min_df"],
-        max_df=settings["max_df"],
-        lowercase=settings["lowercase"],
-        stop_words="english",
+        max_features=max_features,
+        ngram_range=(ngram_start_range, ngram_end_range),
+        min_df=min_df,
+        max_df=max_df,
+        lowercase=True,
+        stop_words=stopwords,
     )
     fitted_vect = vect_setup.fit(spelling_fixed)
     transformed_vect = fitted_vect.transform(spelling_fixed)
     fitted_vect_df = topic._fit_vectorizer_to_df(transformed_vect, fitted_vect)
     # Model fitting
     warning = None
-    model_setup = model_lookup[model_selection]["class"](
-        n_components=settings["n_topics"],
-        max_iter=settings["max_iter"][model_lookup[model_selection]["short"]],
+    model_setup = LatentDirichletAllocation(
+        n_components=n_topics,
+        doc_topic_prior=alpha,
+        topic_word_prior=beta,
+        max_iter=n_iter,
         random_state=179,
     )
     with warnings.catch_warnings(record=True) as caught_warnings:
         model_fitted = model_setup.fit(transformed_vect)
         model_transformed = model_fitted.transform(transformed_vect)
-        topic_names = [f"Topic {i+1}" for i in range(settings["n_topics"])]
+        topic_names = [f"Topic {i+1}" for i in range(n_topics)]
         topic_names_snake = [re.sub(" ", "_", name_x).lower() for name_x in topic_names]
         model_fitted_df = pd.DataFrame(model_transformed, columns=topic_names_snake)
         for warn in caught_warnings:
@@ -250,22 +275,6 @@ with st.spinner("Updating report..."):
     a1, a2, a3, a4, a5 = st.columns(5)
     with a1:
         st.metric("Total Responses", len(raw_data))
-    with a2:
-        st.metric(
-            "Organisation Responses",
-            str(
-                round(len(raw_data[raw_data["qu_1"] == "Yes"]) / len(raw_data) * 100, 2)
-            )
-            + "%",
-        )
-    with a3:
-        st.metric(
-            "Private Responses",
-            str(round(len(raw_data[raw_data["qu_1"] == "No"]) / len(raw_data) * 100, 2))
-            + "%",
-        )
-    a4.empty()
-    a5.empty()
     st.divider()
 
     # Topic Word Dataframe configuration
@@ -275,7 +284,7 @@ with st.spinner("Updating report..."):
     st.header("Topic Words")
     keys = list(topic_words.columns)
     values = ["Word", "Word frequency"]
-    for i in range(settings["n_topics"]):
+    for i in range(n_topics):
         name = f"Topic {i+1}"
         col_config = st.column_config.ProgressColumn(
             label=f"Weight - Topic {i+1}",
@@ -285,13 +294,20 @@ with st.spinner("Updating report..."):
         values.append(name)
         values.append(col_config)
     my_dict = dict(zip(keys, values))
+    todays_date = dt.today().strftime("%Y%m%d")
     st.dataframe(
         topic_words_final,
         column_config=my_dict,
         hide_index=True,
         use_container_width=True,
     )
-
+    topic_words_a, topic_words_b = st.columns([0.9, 0.1])
+    topic_words_b.download_button(
+        "Export table",
+        topic_words_final.to_csv().encode("utf-8"),
+        f"{todays_date}_words_by_topic.csv",
+    )
+    st.divider()
     # Responses by topic
     st.header("Responses by topic")
     st.dataframe(
@@ -299,14 +315,20 @@ with st.spinner("Updating report..."):
         hide_index=True,
         use_container_width=True,
     )
-
+    topic_table_a, topic_table_b = st.columns([0.9, 0.10])
+    topic_table_b.download_button(
+        "Export table",
+        text_with_topic_df.to_csv().encode("utf-8"),
+        f"{todays_date}_responses_by_topic.csv",
+    )
+    st.divider()
     # Explore Topic options
     box1, box2, box3 = st.columns([0.4, 0.3, 0.3])
 
     topic_name = box1.selectbox("Explore Topic:", index=0, options=topic_names)
 
     n_samples = box2.number_input(
-        "Number of responses:", min_value=1, max_value=20, value=3
+        "Number of responses:", min_value=1, max_value=20, value=8
     )
     label_option = box3.radio(
         "Topic Labels:", ["Off", "Single Topic", "Multi-Topic"], horizontal=True
