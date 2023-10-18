@@ -1,5 +1,6 @@
 import re
 import warnings
+from collections import Counter
 from datetime import datetime as dt
 
 import numpy as np
@@ -14,6 +15,7 @@ from src.modules import preprocessing as prep
 from src.modules import spell_correct as spell
 from src.modules import streamlit as stream
 from src.modules import topic_modelling as topic
+from src.modules import word_counts
 from src.modules.config import Config
 
 # Page configuration
@@ -210,6 +212,8 @@ with st.spinner("Updating report..."):
     spell_checker = spell.update_spell_dictionary(config["spelling"])
     raw_series = raw_data[question]
     response_char_lengths = prep.get_response_length(raw_series)
+    response_word_counts = pd.Series([len(Counter(x.split())) for x in raw_series])
+    word_counts_fig = word_counts.plot_word_counts(response_word_counts)
     average_response_char_length = response_char_lengths.mean()
     # Cleaning
     no_ans_removed = prep.remove_no_answer(raw_series)
@@ -278,6 +282,9 @@ with st.spinner("Updating report..."):
         st.metric("Question Responses", len(spelling_fixed))
     with a2:
         st.metric("Total Responses", len(raw_data))
+
+    container = st.container()
+    container.plotly_chart(word_counts_fig)
     st.divider()
 
     # Topic Word Dataframe configuration
