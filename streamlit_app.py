@@ -272,8 +272,11 @@ with st.spinner("Updating report..."):
 
     # Summary information
     st.header("Summary information")
+    st.write(f"**Question:** {question}")
     a1, a2, a3, a4, a5 = st.columns(5)
     with a1:
+        st.metric("Question Responses", len(spelling_fixed))
+    with a2:
         st.metric("Total Responses", len(raw_data))
     st.divider()
 
