@@ -27,7 +27,7 @@ st.set_page_config(
     menu_items={"Report a bug": issue_link},
 )
 
-with open("src\modules\style.css") as f:  # noqa w605
+with open("src/modules/style.css") as f:  # noqa w605
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Side bar
